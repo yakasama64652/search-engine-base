@@ -14,7 +14,6 @@
             height: 100vh;
         }
 
-        /* Nav container to hold both Left and Right links */
         nav {
             display: flex;
             justify-content: space-between;
@@ -29,14 +28,8 @@
             align-items: center;
         }
 
-        nav a { 
-            text-decoration: none; 
-            color: rgba(0,0,0,0.87); 
-        }
-
-        nav a:hover {
-            text-decoration: underline;
-        }
+        nav a { text-decoration: none; color: rgba(0,0,0,0.87); }
+        nav a:hover { text-decoration: underline; }
 
         main {
             flex-grow: 1;
@@ -44,7 +37,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            transition: justify-content 0.3s ease;
+            transition: all 0.3s ease;
         }
 
         main.searching {
@@ -52,10 +45,7 @@
             padding-top: 20px;
         }
 
-        .logo-link {
-            text-decoration: none;
-            cursor: pointer;
-        }
+        .logo-link { text-decoration: none; cursor: pointer; }
 
         .logo {
             width: 272px;
@@ -101,6 +91,7 @@
             gap: 12px;
         }
 
+        /* Dynamic Result Styles */
         #results-area {
             margin-top: 40px;
             width: 584px;
@@ -110,7 +101,7 @@
 
         .result-item {
             text-align: left;
-            padding: 10px;
+            padding: 15px 0;
             border-bottom: 1px solid #eee;
         }
 
@@ -121,9 +112,25 @@
             display: block;
         }
 
+        .result-item a:hover { text-decoration: underline; }
+
         .result-url {
             color: #202124;
             font-size: 14px;
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        .result-desc {
+            color: #4d5156;
+            font-size: 14px;
+            margin: 5px 0 0 0;
+        }
+
+        .no-results {
+            color: #70757a;
+            margin-top: 50px;
+            font-size: 15px;
         }
 
         .btn {
@@ -169,12 +176,7 @@
             </div>
 
             <div id="results-area">
-                <div class="result-item">
-                    <span class="result-url">https://university.lavaautomation.com</span>
-                    <a href="https://university.lavaautomation.com/" target="_blank">Lava University - Learn Automation</a>
-                    <p style="color: #4d5156; font-size: 14px;">The official training platform for LAVA Automation experts.</p>
                 </div>
-            </div>
         </div>
     </main>
 
@@ -189,58 +191,85 @@
     </footer>
 
     <script>
+        // 1. DATA: Add more results here easily!
+        const database = [
+            {
+                keywords: ["lava university", "learn", "training", "education"],
+                url: "https://university.lavaautomation.com",
+                title: "Lava University - Learn Automation",
+                description: "The official training platform for LAVA Automation experts. Master workflows and productivity tools."
+            },
+            {
+                keywords: ["lava automation", "home", "main site", "company"],
+                url: "https://www.lavaautomation.com",
+                title: "LAVA Automation | Streamline Your Business",
+                description: "Innovative automation solutions to help your business grow faster and smarter."
+            },
+            {
+                keywords: ["contact", "support", "help", "email"],
+                url: "https://www.lavaautomation.com/contact",
+                title: "Contact Us - LAVA Support",
+                description: "Need help with your automation? Reach out to our 24/7 support team."
+            }
+        ];
+
         const searchInput = document.getElementById('search-input');
         const searchBtn = document.getElementById('search-btn');
         const resultsArea = document.getElementById('results-area');
         const mainContent = document.getElementById('main-content');
         const buttonRow = document.getElementById('button-row');
-        const homeTrigger = document.getElementById('home-trigger'); // The Logo
-        const homeLink = document.getElementById('home-link');       // The new "Home" text
+        const homeTrigger = document.getElementById('home-trigger');
+        const homeLink = document.getElementById('home-link');
 
         function performSearch() {
             const query = searchInput.value.toLowerCase().trim();
             
-            if (query === "lava university") {
-                mainContent.classList.add('searching');
-                buttonRow.style.display = "none";
-                resultsArea.style.display = "block";
-            } else if (query === "") {
+            if (query === "") {
                 resetToHome();
-            } else {
-                resultsArea.style.display = "none";
-                alert("Try searching for 'lava university'");
+                return;
             }
+
+            // Change Layout
+            mainContent.classList.add('searching');
+            buttonRow.style.display = "none";
+            resultsArea.style.display = "block";
+
+            // Filter the database for matches
+            const matchedResults = database.filter(item => {
+                return item.keywords.some(key => query.includes(key)) || item.title.toLowerCase().includes(query);
+            });
+
+            // Display results
+            renderResults(matchedResults);
+        }
+
+        function renderResults(results) {
+            if (results.length === 0) {
+                resultsArea.innerHTML = `<div class="no-results">No results found for your search. Try "Lava University".</div>`;
+                return;
+            }
+
+            resultsArea.innerHTML = results.map(item => `
+                <div class="result-item">
+                    <span class="result-url">${item.url}</span>
+                    <a href="${item.url}" target="_blank">${item.title}</a>
+                    <p class="result-desc">${item.description}</p>
+                </div>
+            `).join('');
         }
 
         function resetToHome() {
             mainContent.classList.remove('searching');
             buttonRow.style.display = "flex";
             resultsArea.style.display = "none";
+            resultsArea.innerHTML = "";
             searchInput.value = ""; 
         }
 
-        // Home trigger (Logo)
-        homeTrigger.addEventListener('click', function(e) {
-            e.preventDefault();
-            resetToHome();
-        });
-
-        // New Home link (Top Left)
-        homeLink.addEventListener('click', function(e) {
-            e.preventDefault();
-            resetToHome();
-        });
-
-        searchBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            performSearch();
-        });
-
-        searchInput.addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') {
-                performSearch();
-            }
-        });
+        homeTrigger.addEventListener('click', (e) => { e.preventDefault(); resetToHome(); });
+        homeLink.addEventListener('click', (e) => { e.preventDefault(); resetToHome(); });
+        searchBtn.addEventListener('click', (e) => { e.preventDefault(); performSearch(); });
+        searchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') performSearch(); });
     </script>
 
 </body>
