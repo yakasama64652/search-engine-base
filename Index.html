@@ -14,7 +14,6 @@
             height: 100vh;
         }
 
-        /* Top Navigation Simulation */
         header {
             display: flex;
             justify-content: flex-end;
@@ -23,29 +22,32 @@
             font-size: 13px;
         }
 
-        header a {
-            text-decoration: none;
-            color: rgba(0,0,0,0.87);
-        }
+        header a { text-decoration: none; color: rgba(0,0,0,0.87); }
 
-        header a:hover {
-            text-decoration: underline;
-        }
-
-        /* Main Search Section */
         main {
             flex-grow: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            padding-bottom: 100px;
+            justify-content: center; /* This centers everything initially */
+            transition: justify-content 0.3s ease;
+        }
+
+        /* This class will trigger when search is performed */
+        main.searching {
+            justify-content: flex-start;
+            padding-top: 20px;
         }
 
         .logo {
-            width: 400px;
-            max-width: 90%;
+            width: 272px;
             margin-bottom: 30px;
+            transition: width 0.3s;
+        }
+
+        main.searching .logo {
+            width: 150px; /* Shrink logo slightly on search */
+            margin-bottom: 20px;
         }
 
         .search-container {
@@ -63,12 +65,6 @@
             width: 584px;
             max-width: 90%;
             padding: 5px 15px;
-            transition: box-shadow 0.2s;
-        }
-
-        .search-bar-wrapper:hover, .search-bar-wrapper:focus-within {
-            box-shadow: 0 1px 6px rgba(32,33,36,0.28);
-            border-color: rgba(223,225,229,0);
         }
 
         .search-bar-wrapper input {
@@ -86,78 +82,43 @@
             gap: 12px;
         }
 
-        .btn {
-            background-color: #f8f9fa;
-            border: 1px solid #f8f9fa;
-            border-radius: 4px;
-            color: #3c4043;
-            font-size: 14px;
-            padding: 0 16px;
-            line-height: 36px;
-            min-width: 54px;
-            cursor: pointer;
-            transition: border 0.1s, box-shadow 0.1s;
-        }
-
-        .btn:hover {
-            border: 1px solid #dadce0;
-            box-shadow: 0 1px 1px rgba(0,0,0,0.1);
-            color: #202124;
-        }
-
         /* Result Styles */
         #results-area {
-            margin-top: 20px;
+            margin-top: 40px;
             width: 584px;
             max-width: 90%;
-            display: none; /* Hidden by default */
+            display: none;
         }
 
         .result-item {
             text-align: left;
             padding: 10px;
+            border-bottom: 1px solid #eee;
         }
 
         .result-item a {
             color: #1a0dab;
             font-size: 20px;
             text-decoration: none;
-        }
-
-        .result-item a:hover {
-            text-decoration: underline;
+            display: block;
         }
 
         .result-url {
             color: #202124;
             font-size: 14px;
-            display: block;
-            margin-bottom: 4px;
         }
 
-        /* Footer Simulation */
-        footer {
-            background: #f2f2f2;
-            color: #70757a;
-            font-size: 14px;
+        .btn {
+            background-color: #f8f9fa;
+            border: 1px solid #f8f9fa;
+            border-radius: 4px;
+            padding: 0 16px;
+            line-height: 36px;
+            cursor: pointer;
         }
 
-        .footer-top {
-            padding: 15px 30px;
-            border-bottom: 1px solid #dadce0;
-        }
-
-        .footer-bottom {
-            display: flex;
-            justify-content: space-between;
-            padding: 15px 30px;
-            flex-wrap: wrap;
-        }
-
-        .footer-links {
-            display: flex;
-            gap: 25px;
-        }
+        footer { background: #f2f2f2; font-size: 14px; margin-top: auto; }
+        .footer-bottom { display: flex; justify-content: space-between; padding: 15px 30px; }
     </style>
 </head>
 <body>
@@ -168,17 +129,16 @@
         <div style="background: #5f6368; width: 32px; height: 32px; border-radius: 50%;"></div>
     </header>
 
-    <main>
+    <main id="main-content">
         <img src="https://48034691.fs1.hubspotusercontent-na1.net/hubfs/48034691/__hs-marketplace__/LAVA%20Logo%20-%20Black-1.png" alt="LAVA Automation" class="logo">
 
         <div class="search-container">
             <div class="search-bar-wrapper">
-                <svg focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="#9aa0a6"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path></svg>
-                <input type="text" id="search-input" autofocus placeholder="Search...">
-                <svg focusable="false" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg"><path d="m12 15c1.66 0 3-1.34 3-3v-4c0-1.66-1.34-3-3-3s-3 1.34-3 3v4c0 1.66 1.34 3 3 3z" fill="#4285f4"></path><path d="m11 18.92v2.08h2v-2.08c2.84-.45 5-2.9 5-5.92h-2c0 2.21-1.79 4-4 4s-4-1.79-4-4h-2c0 3.02 2.16 5.47 5 5.92z" fill="#34a853"></path><path d="m7 10h2v4h-2z" fill="#fbbc05"></path><path d="m15 10h2v4h-2z" fill="#ea4335"></path></svg>
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="#9aa0a6"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path></svg>
+                <input type="text" id="search-input" autofocus placeholder="Search LAVA...">
             </div>
             
-            <div class="buttons">
+            <div class="buttons" id="button-row">
                 <button class="btn" id="search-btn">LAVA Search</button>
                 <button class="btn">I'm Feeling Productive</button>
             </div>
@@ -187,24 +147,18 @@
                 <div class="result-item">
                     <span class="result-url">https://university.lavaautomation.com</span>
                     <a href="https://university.lavaautomation.com/" target="_blank">Lava University - Learn Automation</a>
+                    <p style="color: #4d5156; font-size: 14px;">The official training platform for LAVA Automation experts.</p>
                 </div>
             </div>
         </div>
     </main>
 
     <footer>
-        <div class="footer-top">Australia</div>
         <div class="footer-bottom">
-            <div class="footer-links">
-                <span>About</span>
-                <span>Advertising</span>
-                <span>Business</span>
-                <span>How Automation Works</span>
-            </div>
-            <div class="footer-links">
+            <span>Australia</span>
+            <div style="display:flex; gap:20px">
                 <span>Privacy</span>
                 <span>Terms</span>
-                <span>Settings</span>
             </div>
         </div>
     </footer>
@@ -213,22 +167,34 @@
         const searchInput = document.getElementById('search-input');
         const searchBtn = document.getElementById('search-btn');
         const resultsArea = document.getElementById('results-area');
+        const mainContent = document.getElementById('main-content');
+        const buttonRow = document.getElementById('button-row');
 
         function performSearch() {
             const query = searchInput.value.toLowerCase().trim();
             
-            // Check if user is looking for lava university
             if (query === "lava university") {
+                // Change layout to "Results Mode"
+                mainContent.classList.add('searching');
+                buttonRow.style.display = "none"; // Hide buttons like a real search
                 resultsArea.style.display = "block";
-            } else {
+            } else if (query === "") {
+                // Reset if empty
+                mainContent.classList.remove('searching');
+                buttonRow.style.display = "flex";
                 resultsArea.style.display = "none";
+            } else {
+                // For anything else, just show nothing found
+                resultsArea.style.display = "none";
+                alert("Try searching for 'lava university'");
             }
         }
 
-        // Trigger on button click
-        searchBtn.addEventListener('click', performSearch);
+        searchBtn.addEventListener('click', function(e) {
+            e.preventDefault(); // Prevent any default form behavior
+            performSearch();
+        });
 
-        // Trigger on "Enter" key
         searchInput.addEventListener('keypress', function (e) {
             if (e.key === 'Enter') {
                 performSearch();
