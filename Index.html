@@ -29,24 +29,30 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center; /* This centers everything initially */
+            justify-content: center;
             transition: justify-content 0.3s ease;
         }
 
-        /* This class will trigger when search is performed */
         main.searching {
             justify-content: flex-start;
             padding-top: 20px;
+        }
+
+        /* Added cursor pointer to the logo link */
+        .logo-link {
+            text-decoration: none;
+            cursor: pointer;
         }
 
         .logo {
             width: 272px;
             margin-bottom: 30px;
             transition: width 0.3s;
+            border: none;
         }
 
         main.searching .logo {
-            width: 150px; /* Shrink logo slightly on search */
+            width: 150px;
             margin-bottom: 20px;
         }
 
@@ -82,7 +88,6 @@
             gap: 12px;
         }
 
-        /* Result Styles */
         #results-area {
             margin-top: 40px;
             width: 584px;
@@ -130,7 +135,9 @@
     </header>
 
     <main id="main-content">
-        <img src="https://48034691.fs1.hubspotusercontent-na1.net/hubfs/48034691/__hs-marketplace__/LAVA%20Logo%20-%20Black-1.png" alt="LAVA Automation" class="logo">
+        <a href="#" class="logo-link" id="home-trigger">
+            <img src="https://48034691.fs1.hubspotusercontent-na1.net/hubfs/48034691/__hs-marketplace__/LAVA%20Logo%20-%20Black-1.png" alt="LAVA Automation" class="logo">
+        </a>
 
         <div class="search-container">
             <div class="search-bar-wrapper">
@@ -169,29 +176,39 @@
         const resultsArea = document.getElementById('results-area');
         const mainContent = document.getElementById('main-content');
         const buttonRow = document.getElementById('button-row');
+        const homeTrigger = document.getElementById('home-trigger');
 
         function performSearch() {
             const query = searchInput.value.toLowerCase().trim();
             
             if (query === "lava university") {
-                // Change layout to "Results Mode"
                 mainContent.classList.add('searching');
-                buttonRow.style.display = "none"; // Hide buttons like a real search
+                buttonRow.style.display = "none";
                 resultsArea.style.display = "block";
             } else if (query === "") {
-                // Reset if empty
-                mainContent.classList.remove('searching');
-                buttonRow.style.display = "flex";
-                resultsArea.style.display = "none";
+                resetToHome();
             } else {
-                // For anything else, just show nothing found
                 resultsArea.style.display = "none";
                 alert("Try searching for 'lava university'");
             }
         }
 
+        // Function to reset everything back to the "Home" state
+        function resetToHome() {
+            mainContent.classList.remove('searching');
+            buttonRow.style.display = "flex";
+            resultsArea.style.display = "none";
+            searchInput.value = ""; // Clear the search bar
+        }
+
+        // Listener for the LAVA Logo click
+        homeTrigger.addEventListener('click', function(e) {
+            e.preventDefault(); // Stop page from refreshing
+            resetToHome();
+        });
+
         searchBtn.addEventListener('click', function(e) {
-            e.preventDefault(); // Prevent any default form behavior
+            e.preventDefault();
             performSearch();
         });
 
