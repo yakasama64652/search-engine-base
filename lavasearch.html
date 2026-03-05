@@ -28,7 +28,7 @@
             align-items: center;
         }
 
-        nav a { text-decoration: none; color: rgba(0,0,0,0.87); cursor: pointer; }
+        nav a { text-decoration: none; color: rgba(0,0,0,0.87); }
         nav a:hover { text-decoration: underline; }
 
         main {
@@ -205,13 +205,12 @@
         const resultsArea = document.getElementById('results-area');
         const mainContent = document.getElementById('main-content');
         const buttonRow = document.getElementById('button-row');
-        const homeTrigger = document.getElementById('home-trigger');
-        const homeLink = document.getElementById('home-link');
 
         function performSearch() {
             const rawQuery = searchInput.value.toLowerCase().trim();
             if (rawQuery === "") return;
 
+            // "Fuzzy" Query: Remove spaces so "hub staff" becomes "hubstaff"
             const cleanQuery = rawQuery.replace(/\s+/g, '');
 
             mainContent.classList.add('searching');
@@ -219,6 +218,7 @@
             resultsArea.style.display = "block";
 
             const matchedResults = database.filter(item => {
+                // Check if cleaned query matches cleaned keywords or title
                 const matchesKeyword = item.keywords.some(key => {
                     const cleanKey = key.replace(/\s+/g, '');
                     return cleanKey.includes(cleanQuery) || cleanQuery.includes(cleanKey);
@@ -246,19 +246,6 @@
                 </div>
             `).join('');
         }
-
-        // --- RESTORED HOME FUNCTIONALITY ---
-        function resetToHome() {
-            mainContent.classList.remove('searching');
-            buttonRow.style.display = "flex";
-            resultsArea.style.display = "none";
-            resultsArea.innerHTML = "";
-            searchInput.value = ""; 
-        }
-
-        homeTrigger.addEventListener('click', (e) => { e.preventDefault(); resetToHome(); });
-        homeLink.addEventListener('click', (e) => { e.preventDefault(); resetToHome(); });
-        // -----------------------------------
 
         searchBtn.addEventListener('click', performSearch);
         searchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') performSearch(); });
