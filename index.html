@@ -209,7 +209,7 @@
                 description: "Innovative automation solutions to help your business grow faster and smarter."
             },
             {
-                keywords: ["world time buddy", "timezone", "clock", "time converter", "meeting", "wtb"],
+                keywords: ["world time buddy", "timezone", "clock", "time converter", "meeting", "wtb", "time"],
                 url: "https://www.worldtimebuddy.com/",
                 title: "World Time Buddy - Time Zone Converter",
                 description: "A popular visual world clock, time zone converter, and online meeting scheduler for distributed teams."
@@ -228,21 +228,21 @@
             const rawQuery = searchInput.value.toLowerCase().trim();
             if (rawQuery === "") return;
 
-            const cleanQuery = rawQuery.replace(/\s+/g, '');
+            // This version searches for keywords by seeing if they exist in the query string
+            // or if the query string exists in the keyword.
+            const matchedResults = database.filter(item => {
+                const matchesKeyword = item.keywords.some(key => {
+                    return key.includes(rawQuery) || rawQuery.includes(key);
+                });
+                
+                const matchesTitle = item.title.toLowerCase().includes(rawQuery);
+                return matchesKeyword || matchesTitle;
+            });
 
+            // Layout updates
             mainContent.classList.add('searching');
             buttonRow.style.display = "none";
             resultsArea.style.display = "block";
-
-            const matchedResults = database.filter(item => {
-                const matchesKeyword = item.keywords.some(key => {
-                    const cleanKey = key.replace(/\s+/g, '');
-                    return cleanKey.includes(cleanQuery) || cleanQuery.includes(cleanKey);
-                });
-                
-                const cleanTitle = item.title.toLowerCase().replace(/\s+/g, '');
-                return matchesKeyword || cleanTitle.includes(cleanQuery);
-            });
 
             renderResults(matchedResults);
         }
