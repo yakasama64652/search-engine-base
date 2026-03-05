@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LAVA Search + AI</title>
+    <title>LAVA Search</title>
     <style>
         :root {
             --bg-color: #ffffff;
@@ -16,7 +16,6 @@
             --result-link: #1a0dab;
             --result-desc: #4d5156;
             --suggestion-hover: #f1f3f4;
-            --ai-accent: #8ab4f8;
         }
 
         [data-theme="dark"] {
@@ -33,166 +32,312 @@
         }
 
         body {
-            margin: 0; padding: 0;
-            font-family: 'Segoe UI', Roboto, Arial, sans-serif;
-            display: flex; flex-direction: column;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
             height: 100vh;
             background-color: var(--bg-color);
             color: var(--text-color);
             transition: background 0.3s, color 0.3s;
         }
 
-        nav { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; }
-        .nav-left, .nav-right { display: flex; gap: 15px; font-size: 13px; align-items: center; }
-        nav a { text-decoration: none; color: var(--nav-link); cursor: pointer; }
-        
-        #theme-toggle { background: none; border: none; cursor: pointer; color: var(--nav-link); }
-
-        main { flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: all 0.3s ease; }
-        main.searching { justify-content: flex-start; padding-top: 20px; }
-
-        .logo { width: 272px; margin-bottom: 30px; transition: width 0.3s; }
-        main.searching .logo { width: 120px; margin-bottom: 20px; }
-
-        .search-container { width: 100%; display: flex; flex-direction: column; align-items: center; position: relative; }
-        .search-bar-wrapper { 
-            display: flex; align-items: center; 
-            border: 1px solid var(--search-border); border-radius: 24px;
-            width: 584px; max-width: 90%; padding: 5px 15px;
-            background: var(--bg-color); z-index: 10;
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
         }
 
-        .search-bar-wrapper input { border: none; outline: none; height: 34px; font-size: 16px; flex-grow: 1; background: transparent; color: var(--text-color); }
+        .nav-left, .nav-right {
+            display: flex;
+            gap: 15px;
+            font-size: 13px;
+            align-items: center;
+        }
+
+        nav a { text-decoration: none; color: var(--nav-link); cursor: pointer; }
+        nav a:hover { text-decoration: underline; }
+
+        #theme-toggle {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 5px;
+            display: flex;
+            align-items: center;
+            color: var(--nav-link);
+        }
+
+        main {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        main.searching {
+            justify-content: flex-start;
+            padding-top: 20px;
+        }
+
+        .logo {
+            width: 272px;
+            margin-bottom: 30px;
+            transition: width 0.3s;
+            /* CRITICAL FIX: Removed the filter that caused the red to turn blue */
+            filter: none !important;
+        }
+
+        main.searching .logo {
+            width: 150px;
+            margin-bottom: 20px;
+        }
+
+        .search-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        .search-bar-wrapper {
+            display: flex;
+            align-items: center;
+            border: 1px solid var(--search-border);
+            border-radius: 24px;
+            width: 584px;
+            max-width: 90%;
+            padding: 5px 15px;
+            background: var(--bg-color);
+            z-index: 10;
+        }
+
+        .search-bar-wrapper input {
+            border: none;
+            outline: none;
+            height: 34px;
+            font-size: 16px;
+            flex-grow: 1;
+            padding: 0 10px;
+            background: transparent;
+            color: var(--text-color);
+        }
 
         #suggestions-list {
-            width: 584px; max-width: 90%; background: var(--bg-color);
-            border: 1px solid var(--search-border); border-radius: 0 0 24px 24px;
-            display: none; position: absolute; top: 45px; list-style: none; padding: 10px 0; z-index: 5;
-        }
-
-        .suggestion-item { padding: 10px 20px; cursor: pointer; }
-        .suggestion-item:hover { background-color: var(--suggestion-hover); }
-
-        .buttons { margin-top: 30px; display: flex; gap: 12px; }
-        .btn { background-color: var(--btn-bg); border: 1px solid var(--btn-bg); border-radius: 4px; padding: 0 16px; line-height: 36px; cursor: pointer; color: var(--btn-text); }
-
-        #results-area { margin-top: 30px; width: 652px; max-width: 90%; display: none; }
-
-        /* AI BOX STYLING */
-        #ai-box {
-            background: var(--btn-bg);
+            width: 584px;
+            max-width: 90%;
+            background: var(--bg-color);
             border: 1px solid var(--search-border);
-            border-left: 4px solid var(--ai-accent);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 30px;
-            animation: fadeIn 0.5s ease;
+            border-top: none;
+            border-radius: 0 0 24px 24px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            display: none;
+            position: absolute;
+            top: 45px;
+            list-style: none;
+            padding: 10px 0;
+            margin: 0;
+            z-index: 5;
         }
 
-        .result-item { padding: 15px 0; border-bottom: 1px solid var(--search-border); }
-        .result-item a { color: var(--result-link); font-size: 20px; text-decoration: none; }
-        .result-desc { color: var(--result-desc); margin-top: 5px; font-size: 14px; }
+        .suggestion-item {
+            padding: 10px 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .suggestion-item:hover, .suggestion-item.selected {
+            background-color: var(--suggestion-hover);
+        }
 
-        footer { background: var(--footer-bg); font-size: 14px; margin-top: auto; padding: 15px 30px; display: flex; justify-content: space-between; }
+        .buttons {
+            margin-top: 30px;
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            background-color: var(--btn-bg);
+            border: 1px solid var(--btn-bg);
+            border-radius: 4px;
+            padding: 0 16px;
+            line-height: 36px;
+            cursor: pointer;
+            color: var(--btn-text);
+        }
+
+        .btn:hover { border: 1px solid var(--search-border); }
+
+        #results-area {
+            margin-top: 40px;
+            width: 584px;
+            max-width: 90%;
+            display: none;
+        }
+
+        .result-item {
+            text-align: left;
+            padding: 20px 0; 
+            border-bottom: 1px solid var(--search-border);
+        }
+
+        .result-item a {
+            color: var(--result-link);
+            font-size: 22px; 
+            text-decoration: none;
+        }
+
+        .result-desc { color: var(--result-desc); margin-top: 5px; }
+
+        footer { background: var(--footer-bg); font-size: 14px; margin-top: auto; }
+        .footer-bottom { display: flex; justify-content: space-between; padding: 15px 30px; }
     </style>
 </head>
 <body>
 
     <nav>
-        <div class="nav-left"><a onclick="location.reload()">Home</a></div>
+        <div class="nav-left"><a id="home-link">Home</a></div>
         <div class="nav-right">
-            <button id="theme-toggle">
-                <svg id="theme-icon" viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 3c.132 0 .263 0 .393.007a9 9 0 0 0 7.5 13.5A9 9 0 1 1 12 3z"/></svg>
+            <button id="theme-toggle" title="Toggle Dark Mode">
+                <svg id="theme-icon" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                    <path d="M12 3c.132 0 .263 0 .393.007a9 9 0 0 0 7.5 13.5A9 9 0 1 1 12 3z"/>
+                </svg>
             </button>
             <a href="#">LAVA Mail</a>
+            <a href="#">Images</a>
             <div style="background: #5f6368; width: 32px; height: 32px; border-radius: 50%;"></div>
         </div>
     </nav>
 
     <main id="main-content">
-        <img src="https://48034691.fs1.hubspotusercontent-na1.net/hubfs/48034691/__hs-marketplace__/LAVA%20Logo%20-%20Black-1.png" alt="LAVA" class="logo" id="main-logo">
+        <a class="logo-link" id="home-trigger">
+            <img src="https://48034691.fs1.hubspotusercontent-na1.net/hubfs/48034691/__hs-marketplace__/LAVA%20Logo%20-%20Black-1.png" alt="LAVA Automation" class="logo" id="main-logo">
+        </a>
         <div class="search-container">
-            <div class="search-bar-wrapper">
-                <input type="text" id="search-input" autocomplete="off" autofocus placeholder="Search LAVA or ask a question...">
+            <div class="search-bar-wrapper" id="bar-wrapper">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="#9aa0a6"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path></svg>
+                <input type="text" id="search-input" autocomplete="off" autofocus placeholder="Search LAVA...">
             </div>
             <ul id="suggestions-list"></ul>
+            
             <div class="buttons" id="button-row">
                 <button class="btn" id="search-btn">LAVA Search</button>
                 <button class="btn">I'm Feeling Productive</button>
             </div>
-            
-            <div id="results-area">
-                <div id="ai-box" style="display:none;">
-                    <div style="font-weight: bold; margin-bottom: 8px; color: var(--ai-accent); font-size: 12px; text-transform: uppercase;">AI Overview</div>
-                    <div id="ai-text">Thinking...</div>
-                </div>
-                <div id="web-results"></div>
-            </div>
+            <div id="results-area"></div>
         </div>
     </main>
 
     <footer>
-        <span>Australia</span>
-        <div style="display:flex; gap:20px"><span>Privacy</span><span>Terms</span></div>
+        <div class="footer-bottom">
+            <span>Australia</span>
+            <div style="display:flex; gap:20px"><span>Privacy</span><span>Terms</span></div>
+        </div>
     </footer>
 
     <script>
         const database = [
-            { keywords: ["hubstaff", "time"], url: "https://hubstaff.com/", title: "Hubstaff - Time Tracking", description: "All-in-one work management platform." },
-            { keywords: ["university", "learn"], url: "https://university.lavaautomation.com", title: "Lava University", description: "Official training platform for LAVA experts." },
-            { keywords: ["lava", "automation"], url: "https://www.lavaautomation.com", title: "LAVA Automation", description: "Innovative automation solutions." }
+            { keywords: ["hubstaff", "time tracking", "productivity"], url: "https://hubstaff.com/", title: "Hubstaff - Time Tracking", description: "The all-in-one work management platform." },
+            { keywords: ["lava university", "learn", "training"], url: "https://university.lavaautomation.com", title: "Lava University", description: "The official training platform for LAVA experts." },
+            { keywords: ["lava automation", "home", "company"], url: "https://www.lavaautomation.com", title: "LAVA Automation", description: "Innovative automation solutions for business growth." },
+            { keywords: ["world time buddy", "timezone", "time converter"], url: "https://www.worldtimebuddy.com/", title: "World Time Buddy", description: "Visual world clock and time zone converter." }
         ];
 
         const searchInput = document.getElementById('search-input');
-        const resultsArea = document.getElementById('results-area');
-        const aiBox = document.getElementById('ai-box');
-        const aiText = document.getElementById('ai-text');
-        const webResults = document.getElementById('web-results');
+        const suggestionsList = document.getElementById('suggestions-list');
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeIcon = document.getElementById('theme-icon');
+        const mainLogo = document.getElementById('main-logo');
 
-        // Theme Toggle
-        document.getElementById('theme-toggle').onclick = () => {
-            const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        // --- DEFINE LOGO URLS ---
+        const logoLight = "https://48034691.fs1.hubspotusercontent-na1.net/hubfs/48034691/__hs-marketplace__/LAVA%20Logo%20-%20Black-1.png";
+        // REPLACE THIS PLACEHOLDER WITH THE ACTUAL URL OF YOUR LOGO DESIGNED FOR DARK BACKGROUNDS
+        const logoDark = "LAVA_LOGO_FOR_DARK_MODE_HERE"; 
+
+
+        // --- THEME LOGIC ---
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const targetTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            setTheme(targetTheme);
+        }
+
+        function setTheme(theme) {
             document.documentElement.setAttribute('data-theme', theme);
-        };
+            localStorage.setItem('theme', theme);
+            updateThemeIcon(theme);
+            updateLogo(theme);
+        }
 
-        async function performSearch() {
-            const query = searchInput.value.trim().toLowerCase();
-            if (!query) return;
+        function updateThemeIcon(theme) {
+            if (theme === 'dark') {
+                themeIcon.innerHTML = '<path d="M12 7a5 5 0 1 1-4.992 5.002A5 5 0 0 1 12 7.002zm0 2a3 3 0 1 0 2.995 3.003A3 3 0 0 0 12 9.002zM11 1h2v3h-2V1zm0 19h2v3h-2v-3zM3.515 4.929l1.414-1.414L7.05 5.636 5.636 7.05 3.515 4.93zM16.95 18.364l1.414-1.414 2.121 2.121-1.414 1.414-2.121-2.121zm2.121-14.85l1.414 1.415-2.121 2.121-1.415-1.414 2.121-2.121zM5.636 16.95l1.414 1.414-2.121 2.121-1.414-1.414 2.121-2.121zM23 11v2h-3v-2h3zM4 11v2H1v-2h3z"/>'; // Sun
+            } else {
+                themeIcon.innerHTML = '<path d="M12 3c.132 0 .263 0 .393.007a9 9 0 0 0 7.5 13.5A9 9 0 1 1 12 3z"/>'; // Moon
+            }
+        }
+
+        function updateLogo(theme) {
+            if (theme === 'dark') {
+                // If logoDark is still the placeholder, we fallback to light so it doesn't break
+                mainLogo.src = logoDark === "LAVA_LOGO_FOR_DARK_MODE_HERE" ? logoLight : logoDark;
+            } else {
+                mainLogo.src = logoLight;
+            }
+        }
+
+        // Initialize Theme
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        setTheme(savedTheme); // Run setTheme once on load to establish the state
+        
+        themeToggle.addEventListener('click', toggleTheme);
+
+        // --- SEARCH LOGIC (Same as before) ---
+        function performSearch() {
+            const rawQuery = searchInput.value.toLowerCase().trim();
+            if (!rawQuery) return;
+            
+            const matched = database.filter(item => 
+                item.keywords.some(k => k.toLowerCase().includes(rawQuery)) ||
+                item.title.toLowerCase().includes(rawQuery) ||
+                item.description.toLowerCase().includes(rawQuery)
+            );
 
             document.getElementById('main-content').classList.add('searching');
             document.getElementById('button-row').style.display = "none";
-            resultsArea.style.display = "block";
+            document.getElementById('results-area').style.display = "block";
+            suggestionsList.style.display = 'none';
 
-            // 1. Simulate AI Answer
-            aiBox.style.display = "block";
-            aiText.innerText = "Processing query...";
-            
-            setTimeout(() => {
-                if (query.includes("what is lava")) {
-                    aiText.innerHTML = "<strong>LAVA Automation</strong> is a company specializing in business process optimization. They offer training via <strong>Lava University</strong> and custom automation tools.";
-                } else {
-                    aiText.innerHTML = `You searched for "${query}". I am a mini-AI logic box. To get real-time answers, you can connect this box to the OpenAI or Gemini API.`;
-                }
-            }, 800);
-
-            // 2. Search Database
-            const matches = database.filter(item => 
-                item.title.toLowerCase().includes(query) || 
-                item.keywords.some(k => k.includes(query))
-            );
-
-            webResults.innerHTML = matches.map(item => `
+            document.getElementById('results-area').innerHTML = matched.length ? matched.map(item => `
                 <div class="result-item">
+                    <span class="result-url">${item.url}</span><br>
                     <a href="${item.url}" target="_blank">${item.title}</a>
                     <p class="result-desc">${item.description}</p>
                 </div>
-            `).join('') || `<p>No local matches found. Try asking the AI!</p>`;
+            `).join('') : `<p>No results for "${rawQuery}"</p>`;
         }
 
-        searchInput.onkeypress = e => e.key === 'Enter' && performSearch();
-        document.getElementById('search-btn').onclick = performSearch;
+        searchInput.addEventListener('input', () => {
+            const query = searchInput.value.toLowerCase().trim();
+            if (!query) { suggestionsList.style.display = 'none'; return; }
+            const matches = database.filter(item => item.title.toLowerCase().includes(query));
+            suggestionsList.innerHTML = matches.map(m => `<li class="suggestion-item" onclick="selectSug('${m.title}')">${m.title}</li>`).join('');
+            suggestionsList.style.display = matches.length ? 'block' : 'none';
+        });
+
+        window.selectSug = (t) => { searchInput.value = t; performSearch(); };
+        searchInput.addEventListener('keypress', e => e.key === 'Enter' && performSearch());
+        document.getElementById('search-btn').addEventListener('click', performSearch);
+        document.getElementById('home-link').onclick = () => location.reload();
+        document.getElementById('home-trigger').onclick = () => location.reload();
     </script>
 </body>
 </html>
