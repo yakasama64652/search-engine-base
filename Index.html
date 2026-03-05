@@ -1,276 +1,30 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LAVA Search</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-        }
+/* Updated Result Styles to match Google-like sizing */
+.result-item {
+    text-align: left;
+    padding: 20px 0; /* Increased padding for better spacing */
+    border-bottom: 1px solid #eee;
+    max-width: 650px; /* Google's results usually cap around here */
+}
 
-        nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 20px;
-        }
+.result-item a {
+    color: #1a0dab;
+    font-size: 22px; /* Slightly larger title */
+    text-decoration: none;
+    display: block;
+    margin-bottom: 3px;
+}
 
-        .nav-left, .nav-right {
-            display: flex;
-            gap: 15px;
-            font-size: 13px;
-            align-items: center;
-        }
+.result-url {
+    color: #202124;
+    font-size: 14px; /* URL remains small but readable */
+    line-height: 1.5;
+    margin-bottom: 4px;
+    display: block;
+}
 
-        nav a { text-decoration: none; color: rgba(0,0,0,0.87); }
-        nav a:hover { text-decoration: underline; }
-
-        main {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-        }
-
-        main.searching {
-            justify-content: flex-start;
-            padding-top: 20px;
-        }
-
-        .logo-link { text-decoration: none; cursor: pointer; }
-
-        .logo {
-            width: 272px;
-            margin-bottom: 30px;
-            transition: width 0.3s;
-            border: none;
-        }
-
-        main.searching .logo {
-            width: 150px;
-            margin-bottom: 20px;
-        }
-
-        .search-container {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .search-bar-wrapper {
-            display: flex;
-            align-items: center;
-            border: 1px solid #dfe1e5;
-            border-radius: 24px;
-            width: 584px;
-            max-width: 90%;
-            padding: 5px 15px;
-        }
-
-        .search-bar-wrapper input {
-            border: none;
-            outline: none;
-            height: 34px;
-            font-size: 16px;
-            flex-grow: 1;
-            padding: 0 10px;
-        }
-
-        .buttons {
-            margin-top: 30px;
-            display: flex;
-            gap: 12px;
-        }
-
-        /* Dynamic Result Styles */
-        #results-area {
-            margin-top: 40px;
-            width: 584px;
-            max-width: 90%;
-            display: none;
-        }
-
-        .result-item {
-            text-align: left;
-            padding: 15px 0;
-            border-bottom: 1px solid #eee;
-        }
-
-        .result-item a {
-            color: #1a0dab;
-            font-size: 20px;
-            text-decoration: none;
-            display: block;
-        }
-
-        .result-item a:hover { text-decoration: underline; }
-
-        .result-url {
-            color: #202124;
-            font-size: 14px;
-            margin-bottom: 4px;
-            display: block;
-        }
-
-        .result-desc {
-            color: #4d5156;
-            font-size: 14px;
-            margin: 5px 0 0 0;
-        }
-
-        .no-results {
-            color: #70757a;
-            margin-top: 50px;
-            font-size: 15px;
-        }
-
-        .btn {
-            background-color: #f8f9fa;
-            border: 1px solid #f8f9fa;
-            border-radius: 4px;
-            padding: 0 16px;
-            line-height: 36px;
-            cursor: pointer;
-        }
-
-        footer { background: #f2f2f2; font-size: 14px; margin-top: auto; }
-        .footer-bottom { display: flex; justify-content: space-between; padding: 15px 30px; }
-    </style>
-</head>
-<body>
-
-    <nav>
-        <div class="nav-left">
-            <a href="#" id="home-link">Home</a>
-        </div>
-        <div class="nav-right">
-            <a href="#">LAVA Mail</a>
-            <a href="#">Images</a>
-            <div style="background: #5f6368; width: 32px; height: 32px; border-radius: 50%;"></div>
-        </div>
-    </nav>
-
-    <main id="main-content">
-        <a href="#" class="logo-link" id="home-trigger">
-            <img src="https://48034691.fs1.hubspotusercontent-na1.net/hubfs/48034691/__hs-marketplace__/LAVA%20Logo%20-%20Black-1.png" alt="LAVA Automation" class="logo">
-        </a>
-
-        <div class="search-container">
-            <div class="search-bar-wrapper">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="#9aa0a6"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path></svg>
-                <input type="text" id="search-input" autofocus placeholder="Search LAVA...">
-            </div>
-            
-            <div class="buttons" id="button-row">
-                <button class="btn" id="search-btn">LAVA Search</button>
-                <button class="btn">I'm Feeling Productive</button>
-            </div>
-
-            <div id="results-area">
-                </div>
-        </div>
-    </main>
-
-    <footer>
-        <div class="footer-bottom">
-            <span>Australia</span>
-            <div style="display:flex; gap:20px">
-                <span>Privacy</span>
-                <span>Terms</span>
-            </div>
-        </div>
-    </footer>
-
-    <script>
-        // 1. DATA: Add more results here easily!
-        const database = [
-            {
-                keywords: ["lava university", "learn", "training", "education"],
-                url: "https://university.lavaautomation.com",
-                title: "Lava University - Learn Automation",
-                description: "The official training platform for LAVA Automation experts. Master workflows and productivity tools."
-            },
-            {
-                keywords: ["lava automation", "home", "main site", "company"],
-                url: "https://www.lavaautomation.com",
-                title: "LAVA Automation | Streamline Your Business",
-                description: "Innovative automation solutions to help your business grow faster and smarter."
-            },
-            {
-                keywords: ["contact", "support", "help", "email"],
-                url: "https://www.lavaautomation.com/contact",
-                title: "Contact Us - LAVA Support",
-                description: "Need help with your automation? Reach out to our 24/7 support team."
-            }
-        ];
-
-        const searchInput = document.getElementById('search-input');
-        const searchBtn = document.getElementById('search-btn');
-        const resultsArea = document.getElementById('results-area');
-        const mainContent = document.getElementById('main-content');
-        const buttonRow = document.getElementById('button-row');
-        const homeTrigger = document.getElementById('home-trigger');
-        const homeLink = document.getElementById('home-link');
-
-        function performSearch() {
-            const query = searchInput.value.toLowerCase().trim();
-            
-            if (query === "") {
-                resetToHome();
-                return;
-            }
-
-            // Change Layout
-            mainContent.classList.add('searching');
-            buttonRow.style.display = "none";
-            resultsArea.style.display = "block";
-
-            // Filter the database for matches
-            const matchedResults = database.filter(item => {
-                return item.keywords.some(key => query.includes(key)) || item.title.toLowerCase().includes(query);
-            });
-
-            // Display results
-            renderResults(matchedResults);
-        }
-
-        function renderResults(results) {
-            if (results.length === 0) {
-                resultsArea.innerHTML = `<div class="no-results">No results found for your search. Try "Lava University".</div>`;
-                return;
-            }
-
-            resultsArea.innerHTML = results.map(item => `
-                <div class="result-item">
-                    <span class="result-url">${item.url}</span>
-                    <a href="${item.url}" target="_blank">${item.title}</a>
-                    <p class="result-desc">${item.description}</p>
-                </div>
-            `).join('');
-        }
-
-        function resetToHome() {
-            mainContent.classList.remove('searching');
-            buttonRow.style.display = "flex";
-            resultsArea.style.display = "none";
-            resultsArea.innerHTML = "";
-            searchInput.value = ""; 
-        }
-
-        homeTrigger.addEventListener('click', (e) => { e.preventDefault(); resetToHome(); });
-        homeLink.addEventListener('click', (e) => { e.preventDefault(); resetToHome(); });
-        searchBtn.addEventListener('click', (e) => { e.preventDefault(); performSearch(); });
-        searchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') performSearch(); });
-    </script>
-
-</body>
-</html>
+.result-desc {
+    color: #4d5156;
+    font-size: 16px; /* Increased from 14px for better readability */
+    line-height: 1.58; /* Standard line height for body text */
+    margin: 5px 0 0 0;
+}
