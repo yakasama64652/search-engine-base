@@ -28,7 +28,7 @@
             align-items: center;
         }
 
-        nav a { text-decoration: none; color: rgba(0,0,0,0.87); }
+        nav a { text-decoration: none; color: rgba(0,0,0,0.87); cursor: pointer; }
         nav a:hover { text-decoration: underline; }
 
         main {
@@ -40,6 +40,7 @@
             transition: all 0.3s ease;
         }
 
+        /* State when results are shown */
         main.searching {
             justify-content: flex-start;
             padding-top: 20px;
@@ -76,6 +77,11 @@
             padding: 5px 15px;
         }
 
+        .search-bar-wrapper:hover {
+            box-shadow: 0 1px 6px rgba(32,33,36,.28);
+            border-color: rgba(223,225,229,0);
+        }
+
         .search-bar-wrapper input {
             border: none;
             outline: none;
@@ -102,12 +108,11 @@
             text-align: left;
             padding: 20px 0; 
             border-bottom: 1px solid #eee;
-            max-width: 650px;
         }
 
         .result-item a {
             color: #1a0dab;
-            font-size: 22px; 
+            font-size: 20px; 
             text-decoration: none;
             display: block;
             margin-bottom: 3px;
@@ -137,6 +142,13 @@
             padding: 0 16px;
             line-height: 36px;
             cursor: pointer;
+            color: #3c4043;
+        }
+
+        .btn:hover {
+            border: 1px solid #dadce0;
+            box-shadow: 0 1px 1px rgba(0,0,0,.1);
+            color: #202124;
         }
 
         footer { background: #f2f2f2; font-size: 14px; margin-top: auto; }
@@ -146,7 +158,9 @@
 <body>
 
     <nav>
-        <div class="nav-left"><a href="#" id="home-link">Home</a></div>
+        <div class="nav-left">
+            <a id="home-link">Home</a>
+        </div>
         <div class="nav-right">
             <a href="#">LAVA Mail</a>
             <a href="#">Images</a>
@@ -155,7 +169,7 @@
     </nav>
 
     <main id="main-content">
-        <a href="#" class="logo-link" id="home-trigger">
+        <a class="logo-link" id="home-trigger">
             <img src="https://48034691.fs1.hubspotusercontent-na1.net/hubfs/48034691/__hs-marketplace__/LAVA%20Logo%20-%20Black-1.png" alt="LAVA Automation" class="logo">
         </a>
         <div class="search-container">
@@ -205,12 +219,16 @@
         const resultsArea = document.getElementById('results-area');
         const mainContent = document.getElementById('main-content');
         const buttonRow = document.getElementById('button-row');
+        
+        // Navigation Elements
+        const homeLink = document.getElementById('home-link');
+        const homeTrigger = document.getElementById('home-trigger');
 
+        // Function to perform search
         function performSearch() {
             const rawQuery = searchInput.value.toLowerCase().trim();
             if (rawQuery === "") return;
 
-            // "Fuzzy" Query: Remove spaces so "hub staff" becomes "hubstaff"
             const cleanQuery = rawQuery.replace(/\s+/g, '');
 
             mainContent.classList.add('searching');
@@ -218,7 +236,6 @@
             resultsArea.style.display = "block";
 
             const matchedResults = database.filter(item => {
-                // Check if cleaned query matches cleaned keywords or title
                 const matchesKeyword = item.keywords.some(key => {
                     const cleanKey = key.replace(/\s+/g, '');
                     return cleanKey.includes(cleanQuery) || cleanQuery.includes(cleanKey);
@@ -233,9 +250,10 @@
             renderResults(matchedResults);
         }
 
+        // Function to render results to the page
         function renderResults(results) {
             if (results.length === 0) {
-                resultsArea.innerHTML = `<div class="no-results">No results found.</div>`;
+                resultsArea.innerHTML = `<div style="margin-top:20px; color:#70757a;">Your search - <b>${searchInput.value}</b> - did not match any documents.</div>`;
                 return;
             }
             resultsArea.innerHTML = results.map(item => `
@@ -247,8 +265,29 @@
             `).join('');
         }
 
+        // --- NEW: Reset function to return to Landing Page ---
+        function resetToHome(e) {
+            if (e) e.preventDefault();
+            
+            // Clear input and remove 'searching' class to center UI
+            searchInput.value = "";
+            mainContent.classList.remove('searching');
+            
+            // Toggle visibility back to default
+            buttonRow.style.display = "flex";
+            resultsArea.style.display = "none";
+            
+            // Refocus the input for convenience
+            searchInput.focus();
+        }
+
+        // Event Listeners
         searchBtn.addEventListener('click', performSearch);
         searchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') performSearch(); });
+
+        // Link Home and Logo to the reset function
+        homeLink.addEventListener('click', resetToHome);
+        homeTrigger.addEventListener('click', resetToHome);
     </script>
 </body>
 </html>
