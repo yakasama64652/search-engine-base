@@ -19,7 +19,6 @@
             --text-color: #e3e3e3;
             --input-bg: #1e1f20;
             --border-color: #444746;
-            /* Makes the black logo white for dark mode */
             --logo-filter: invert(1) brightness(2);
         }
 
@@ -34,7 +33,6 @@
             transition: 0.3s;
         }
 
-        /* Navigation */
         nav {
             padding: 15px 20px;
             display: flex;
@@ -49,7 +47,6 @@
             cursor: pointer;
         }
 
-        /* Chat Container */
         .chat-wrapper {
             flex-grow: 1;
             display: flex;
@@ -74,7 +71,6 @@
         .welcome-area h1 {
             font-size: 40px;
             font-weight: 400;
-            /* Gemini-style gradient text */
             background: linear-gradient(90deg, #4285f4, #9b72cb, #d96570);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -82,7 +78,6 @@
             margin-top: 0;
         }
 
-        /* Input Box (Gemini Style) */
         .input-container {
             width: 100%;
             max-width: 760px;
@@ -118,7 +113,6 @@
             text-align: center;
         }
 
-        /* Home Button behavior */
         #home-link:hover { text-decoration: underline; }
     </style>
 </head>
@@ -131,7 +125,9 @@
     <div class="chat-wrapper">
         <div class="welcome-area">
             <img src="https://48034691.fs1.hubspotusercontent-na1.net/hubfs/48034691/__hs-marketplace__/LAVA%20Logo%20-%20Black-1.png" alt="LAVA Logo" class="ama-logo">
+            
             <h1>Hello, Virtual Assistant</h1>
+            
             <p>How can I help you be more productive today?</p>
         </div>
 
@@ -147,15 +143,13 @@
     </div>
 
     <script>
-        // Apply theme from main page to keep the experience consistent
         const savedTheme = localStorage.getItem('theme') || 'light';
         document.documentElement.setAttribute('data-theme', savedTheme);
 
-        // Handle Enter key for interaction
         document.getElementById('chat-input').addEventListener('keypress', (e) => {
             if (e.key === 'Enter' && e.target.value.trim() !== "") {
-                alert("Processing request... You asked: " + e.target.value);
-                e.target.value = ""; // Clear input after "sending"
+                alert("Thinking... You typed: " + e.target.value);
+                e.target.value = "";
             }
         });
     </script>
