@@ -64,6 +64,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            position: relative; /* Needed for absolute positioning of suggestions */
         }
 
         .search-bar-wrapper {
@@ -74,9 +75,11 @@
             width: 584px;
             max-width: 90%;
             padding: 5px 15px;
+            background: white;
+            z-index: 10;
         }
 
-        .search-bar-wrapper:hover {
+        .search-bar-wrapper:hover, .search-bar-wrapper.has-suggestions {
             box-shadow: 0 1px 6px rgba(32,33,36,0.28);
             border-color: rgba(223,225,229,0);
         }
@@ -88,6 +91,36 @@
             font-size: 16px;
             flex-grow: 1;
             padding: 0 10px;
+        }
+
+        /* Suggestions Styling */
+        #suggestions-list {
+            width: 584px;
+            max-width: 90%;
+            background: white;
+            border: 1px solid #dfe1e5;
+            border-top: none;
+            border-radius: 0 0 24px 24px;
+            box-shadow: 0 4px 6px rgba(32,33,36,0.28);
+            display: none;
+            position: absolute;
+            top: 45px;
+            list-style: none;
+            padding: 10px 0;
+            margin: 0;
+            z-index: 5;
+        }
+
+        .suggestion-item {
+            padding: 10px 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .suggestion-item:hover, .suggestion-item.selected {
+            background-color: #f1f3f4;
         }
 
         .buttons {
@@ -169,10 +202,12 @@
             <img src="https://48034691.fs1.hubspotusercontent-na1.net/hubfs/48034691/__hs-marketplace__/LAVA%20Logo%20-%20Black-1.png" alt="LAVA Automation" class="logo">
         </a>
         <div class="search-container">
-            <div class="search-bar-wrapper">
+            <div class="search-bar-wrapper" id="bar-wrapper">
                 <svg viewBox="0 0 24 24" width="20" height="20" fill="#9aa0a6"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path></svg>
-                <input type="text" id="search-input" autofocus placeholder="Search LAVA...">
+                <input type="text" id="search-input" autocomplete="off" autofocus placeholder="Search LAVA...">
             </div>
+            <ul id="suggestions-list"></ul>
+            
             <div class="buttons" id="button-row">
                 <button class="btn" id="search-btn">LAVA Search</button>
                 <button class="btn">I'm Feeling Productive</button>
@@ -221,28 +256,30 @@
         const resultsArea = document.getElementById('results-area');
         const mainContent = document.getElementById('main-content');
         const buttonRow = document.getElementById('button-row');
-        const homeLink = document.getElementById('home-link');
-        const homeTrigger = document.getElementById('home-trigger');
+        const suggestionsList = document.getElementById('suggestions-list');
+        const barWrapper = document.getElementById('bar-wrapper');
+        
+        let selectedIndex = -1;
+
+        function getFilteredResults(query) {
+            return database.filter(item => {
+                const matchesKeyword = item.keywords.some(key => key.toLowerCase().includes(query));
+                const matchesTitle = item.title.toLowerCase().includes(query);
+                const matchesDescription = item.description.toLowerCase().includes(query);
+                return matchesKeyword || matchesTitle || matchesDescription;
+            });
+        }
 
         function performSearch() {
             const rawQuery = searchInput.value.toLowerCase().trim();
             if (rawQuery === "") return;
 
-            const matchedResults = database.filter(item => {
-                // Check keywords for a partial match
-                const matchesKeyword = item.keywords.some(key => key.toLowerCase().includes(rawQuery));
-                
-                // Check title and description for a partial match
-                const matchesTitle = item.title.toLowerCase().includes(rawQuery);
-                const matchesDescription = item.description.toLowerCase().includes(rawQuery);
-                
-                return matchesKeyword || matchesTitle || matchesDescription;
-            });
+            const matchedResults = getFilteredResults(rawQuery);
 
-            // Layout updates
             mainContent.classList.add('searching');
             buttonRow.style.display = "none";
             resultsArea.style.display = "block";
+            hideSuggestions();
 
             renderResults(matchedResults);
         }
@@ -261,18 +298,76 @@
             `).join('');
         }
 
-        function resetPage(e) {
-            if (e) e.preventDefault();
-            searchInput.value = "";
-            mainContent.classList.remove('searching');
-            buttonRow.style.display = "flex";
-            resultsArea.style.display = "none";
+        function showSuggestions() {
+            const query = searchInput.value.toLowerCase().trim();
+            if (query.length === 0) {
+                hideSuggestions();
+                return;
+            }
+
+            const matches = getFilteredResults(query);
+            if (matches.length > 0) {
+                suggestionsList.innerHTML = matches.map((item, index) => `
+                    <li class="suggestion-item" data-index="${index}" onclick="selectSuggestion('${item.title}')">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="#9aa0a6"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path></svg>
+                        ${item.title}
+                    </li>
+                `).join('');
+                suggestionsList.style.display = 'block';
+                barWrapper.style.borderRadius = "24px 24px 0 0";
+            } else {
+                hideSuggestions();
+            }
         }
 
+        function selectSuggestion(title) {
+            searchInput.value = title;
+            performSearch();
+        }
+
+        function hideSuggestions() {
+            suggestionsList.style.display = 'none';
+            barWrapper.style.borderRadius = "24px";
+            selectedIndex = -1;
+        }
+
+        // Event Listeners
+        searchInput.addEventListener('input', showSuggestions);
+
+        searchInput.addEventListener('keydown', (e) => {
+            const items = document.querySelectorAll('.suggestion-item');
+            if (e.key === 'ArrowDown') {
+                selectedIndex = Math.min(selectedIndex + 1, items.length - 1);
+                updateSelection(items);
+            } else if (e.key === 'ArrowUp') {
+                selectedIndex = Math.max(selectedIndex - 1, -1);
+                updateSelection(items);
+            } else if (e.key === 'Enter') {
+                if (selectedIndex > -1) {
+                    searchInput.value = items[selectedIndex].innerText.trim();
+                }
+                performSearch();
+            } else if (e.key === 'Escape') {
+                hideSuggestions();
+            }
+        });
+
+        function updateSelection(items) {
+            items.forEach((item, index) => {
+                item.classList.toggle('selected', index === selectedIndex);
+            });
+        }
+
+        // Close suggestions if clicking outside
+        document.addEventListener('click', (e) => {
+            if (!barWrapper.contains(e.target) && !suggestionsList.contains(e.target)) {
+                hideSuggestions();
+            }
+        });
+
         searchBtn.addEventListener('click', performSearch);
-        searchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') performSearch(); });
-        homeLink.addEventListener('click', resetPage);
-        homeTrigger.addEventListener('click', resetPage);
+        document.getElementById('home-link').addEventListener('click', () => location.reload());
+        document.getElementById('home-trigger').addEventListener('click', () => location.reload());
     </script>
 </body>
 </html>
