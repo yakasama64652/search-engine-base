@@ -40,7 +40,6 @@
             transition: all 0.3s ease;
         }
 
-        /* State when results are shown */
         main.searching {
             justify-content: flex-start;
             padding-top: 20px;
@@ -77,11 +76,6 @@
             padding: 5px 15px;
         }
 
-        .search-bar-wrapper:hover {
-            box-shadow: 0 1px 6px rgba(32,33,36,.28);
-            border-color: rgba(223,225,229,0);
-        }
-
         .search-bar-wrapper input {
             border: none;
             outline: none;
@@ -112,7 +106,7 @@
 
         .result-item a {
             color: #1a0dab;
-            font-size: 20px; 
+            font-size: 22px; 
             text-decoration: none;
             display: block;
             margin-bottom: 3px;
@@ -142,13 +136,6 @@
             padding: 0 16px;
             line-height: 36px;
             cursor: pointer;
-            color: #3c4043;
-        }
-
-        .btn:hover {
-            border: 1px solid #dadce0;
-            box-shadow: 0 1px 1px rgba(0,0,0,.1);
-            color: #202124;
         }
 
         footer { background: #f2f2f2; font-size: 14px; margin-top: auto; }
@@ -158,9 +145,7 @@
 <body>
 
     <nav>
-        <div class="nav-left">
-            <a id="home-link">Home</a>
-        </div>
+        <div class="nav-left"><a id="home-link">Home</a></div>
         <div class="nav-right">
             <a href="#">LAVA Mail</a>
             <a href="#">Images</a>
@@ -219,12 +204,9 @@
         const resultsArea = document.getElementById('results-area');
         const mainContent = document.getElementById('main-content');
         const buttonRow = document.getElementById('button-row');
-        
-        // Navigation Elements
         const homeLink = document.getElementById('home-link');
         const homeTrigger = document.getElementById('home-trigger');
 
-        // Function to perform search
         function performSearch() {
             const rawQuery = searchInput.value.toLowerCase().trim();
             if (rawQuery === "") return;
@@ -242,18 +224,15 @@
                 });
                 
                 const cleanTitle = item.title.toLowerCase().replace(/\s+/g, '');
-                const matchesTitle = cleanTitle.includes(cleanQuery);
-
-                return matchesKeyword || matchesTitle;
+                return matchesKeyword || cleanTitle.includes(cleanQuery);
             });
 
             renderResults(matchedResults);
         }
 
-        // Function to render results to the page
         function renderResults(results) {
             if (results.length === 0) {
-                resultsArea.innerHTML = `<div style="margin-top:20px; color:#70757a;">Your search - <b>${searchInput.value}</b> - did not match any documents.</div>`;
+                resultsArea.innerHTML = `<div class="no-results" style="margin-top:20px">No results found for "${searchInput.value}".</div>`;
                 return;
             }
             resultsArea.innerHTML = results.map(item => `
@@ -265,29 +244,18 @@
             `).join('');
         }
 
-        // --- NEW: Reset function to return to Landing Page ---
-        function resetToHome(e) {
+        function resetPage(e) {
             if (e) e.preventDefault();
-            
-            // Clear input and remove 'searching' class to center UI
             searchInput.value = "";
             mainContent.classList.remove('searching');
-            
-            // Toggle visibility back to default
             buttonRow.style.display = "flex";
             resultsArea.style.display = "none";
-            
-            // Refocus the input for convenience
-            searchInput.focus();
         }
 
-        // Event Listeners
         searchBtn.addEventListener('click', performSearch);
         searchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') performSearch(); });
-
-        // Link Home and Logo to the reset function
-        homeLink.addEventListener('click', resetToHome);
-        homeTrigger.addEventListener('click', resetToHome);
+        homeLink.addEventListener('click', resetPage);
+        homeTrigger.addEventListener('click', resetPage);
     </script>
 </body>
 </html>
