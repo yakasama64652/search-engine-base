@@ -76,11 +76,6 @@
             padding: 5px 15px;
         }
 
-        .search-bar-wrapper:hover {
-            box-shadow: 0 1px 6px rgba(32,33,36,.28);
-            border-color: rgba(223,225,229,0);
-        }
-
         .search-bar-wrapper input {
             border: none;
             outline: none;
@@ -96,7 +91,6 @@
             gap: 12px;
         }
 
-        /* --- Updated Result Styles (Google-like) --- */
         #results-area {
             margin-top: 40px;
             width: 584px;
@@ -136,12 +130,6 @@
             margin: 5px 0 0 0;
         }
 
-        .no-results {
-            color: #70757a;
-            margin-top: 50px;
-            font-size: 15px;
-        }
-
         .btn {
             background-color: #f8f9fa;
             border: 1px solid #f8f9fa;
@@ -149,12 +137,6 @@
             padding: 0 16px;
             line-height: 36px;
             cursor: pointer;
-            color: #3c4043;
-        }
-
-        .btn:hover {
-            border: 1px solid #dadce0;
-            color: #202124;
         }
 
         footer { background: #f2f2f2; font-size: 14px; margin-top: auto; }
@@ -164,9 +146,7 @@
 <body>
 
     <nav>
-        <div class="nav-left">
-            <a href="#" id="home-link">Home</a>
-        </div>
+        <div class="nav-left"><a href="#" id="home-link">Home</a></div>
         <div class="nav-right">
             <a href="#">LAVA Mail</a>
             <a href="#">Images</a>
@@ -178,18 +158,15 @@
         <a href="#" class="logo-link" id="home-trigger">
             <img src="https://48034691.fs1.hubspotusercontent-na1.net/hubfs/48034691/__hs-marketplace__/LAVA%20Logo%20-%20Black-1.png" alt="LAVA Automation" class="logo">
         </a>
-
         <div class="search-container">
             <div class="search-bar-wrapper">
                 <svg viewBox="0 0 24 24" width="20" height="20" fill="#9aa0a6"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path></svg>
                 <input type="text" id="search-input" autofocus placeholder="Search LAVA...">
             </div>
-            
             <div class="buttons" id="button-row">
                 <button class="btn" id="search-btn">LAVA Search</button>
                 <button class="btn">I'm Feeling Productive</button>
             </div>
-
             <div id="results-area"></div>
         </div>
     </main>
@@ -197,18 +174,14 @@
     <footer>
         <div class="footer-bottom">
             <span>Australia</span>
-            <div style="display:flex; gap:20px">
-                <span>Privacy</span>
-                <span>Terms</span>
-            </div>
+            <div style="display:flex; gap:20px"><span>Privacy</span><span>Terms</span></div>
         </div>
     </footer>
 
     <script>
-        // DATA: Added the Customer Success Team link here
         const database = [
             {
-                keywords: ["customer success team", "success", "support team", "netlify"],
+                keywords: ["success", "customer success team", "support", "netlify"],
                 url: "https://customersuccessteam.netlify.app/",
                 title: "Customer Success Team Portal",
                 description: "Access resources, documentation, and support tools managed by the LAVA Customer Success Team."
@@ -218,18 +191,6 @@
                 url: "https://university.lavaautomation.com",
                 title: "Lava University - Learn Automation",
                 description: "The official training platform for LAVA Automation experts. Master workflows and productivity tools."
-            },
-            {
-                keywords: ["lava automation", "home", "main site", "company"],
-                url: "https://www.lavaautomation.com",
-                title: "LAVA Automation | Streamline Your Business",
-                description: "Innovative automation solutions to help your business grow faster and smarter."
-            },
-            {
-                keywords: ["contact", "support", "help", "email"],
-                url: "https://www.lavaautomation.com/contact",
-                title: "Contact Us - LAVA Support",
-                description: "Need help with your automation? Reach out to our 24/7 support team."
             }
         ];
 
@@ -238,26 +199,20 @@
         const resultsArea = document.getElementById('results-area');
         const mainContent = document.getElementById('main-content');
         const buttonRow = document.getElementById('button-row');
-        const homeTrigger = document.getElementById('home-trigger');
-        const homeLink = document.getElementById('home-link');
 
         function performSearch() {
             const query = searchInput.value.toLowerCase().trim();
-            
-            if (query === "") {
-                resetToHome();
-                return;
-            }
+            if (query === "") return;
 
-            // Change Layout
             mainContent.classList.add('searching');
             buttonRow.style.display = "none";
             resultsArea.style.display = "block";
 
-            // Filter for matches (checks keywords or title)
+            // FIXED LOGIC: Check if any keyword CONTAINS the query
             const matchedResults = database.filter(item => {
-                return item.keywords.some(key => query.includes(key)) || 
-                       item.title.toLowerCase().includes(query);
+                const matchesKeyword = item.keywords.some(key => key.includes(query));
+                const matchesTitle = item.title.toLowerCase().includes(query);
+                return matchesKeyword || matchesTitle;
             });
 
             renderResults(matchedResults);
@@ -265,10 +220,9 @@
 
         function renderResults(results) {
             if (results.length === 0) {
-                resultsArea.innerHTML = `<div class="no-results">No results found for your search. Try "Success" or "LAVA University".</div>`;
+                resultsArea.innerHTML = `<div class="no-results">No results found.</div>`;
                 return;
             }
-
             resultsArea.innerHTML = results.map(item => `
                 <div class="result-item">
                     <span class="result-url">${item.url}</span>
@@ -278,19 +232,8 @@
             `).join('');
         }
 
-        function resetToHome() {
-            mainContent.classList.remove('searching');
-            buttonRow.style.display = "flex";
-            resultsArea.style.display = "none";
-            resultsArea.innerHTML = "";
-            searchInput.value = ""; 
-        }
-
-        homeTrigger.addEventListener('click', (e) => { e.preventDefault(); resetToHome(); });
-        homeLink.addEventListener('click', (e) => { e.preventDefault(); resetToHome(); });
-        searchBtn.addEventListener('click', (e) => { e.preventDefault(); performSearch(); });
+        searchBtn.addEventListener('click', performSearch);
         searchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') performSearch(); });
     </script>
-
 </body>
 </html>
