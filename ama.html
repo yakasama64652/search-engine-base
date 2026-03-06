@@ -37,7 +37,6 @@
             flex-direction: column;
             height: 100vh;
             transition: background 0.3s, color 0.3s;
-            overflow: hidden;
         }
 
         /* Navigation */
@@ -74,6 +73,7 @@
             align-items: center;
             justify-content: center;
             padding: 20px;
+            overflow-y: auto;
         }
 
         .welcome-area {
@@ -96,6 +96,31 @@
             -webkit-text-fill-color: transparent;
             margin-bottom: 10px;
             margin-top: 0;
+        }
+
+        /* Shared Resources Section (New) */
+        #shared-resources-area {
+            width: 100%;
+            max-width: 760px;
+            margin-bottom: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+            border-radius: 12px;
+        }
+
+        .resource-card {
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .resource-card a {
+            color: var(--accent-blue);
+            text-decoration: none;
+            font-weight: bold;
         }
 
         /* Image Preview Area */
@@ -243,6 +268,9 @@
             <p>How can I help you be more productive today?</p>
         </div>
 
+        <div id="shared-resources-area">
+            </div>
+
         <div id="image-preview-container">
             <span class="close-preview" onclick="clearImagePreview()">×</span>
             <img id="preview-img" src="" alt="Preview">
@@ -287,6 +315,7 @@
         const fileInput = document.getElementById('file-input');
         const previewContainer = document.getElementById('image-preview-container');
         const previewImg = document.getElementById('preview-img');
+        const sharedResourcesArea = document.getElementById('shared-resources-area');
 
         let currentImageData = null;
 
@@ -300,6 +329,23 @@
         }
         setTheme(localStorage.getItem('theme') || 'light');
         themeToggle.addEventListener('click', () => setTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'));
+
+        // --- Shared Resource Loader ---
+        function loadSharedResources() {
+            // This assumes index.html is saving its database or results to localStorage
+            const sharedData = JSON.parse(localStorage.getItem('lava_search_history')) || [];
+            
+            if (sharedData.length > 0) {
+                sharedResourcesArea.innerHTML = '<p style="font-size:12px; opacity:0.7; margin-bottom:10px;">Context from your search:</p>';
+                sharedData.slice(0, 2).forEach(item => { // Show last 2 searches
+                    const card = document.createElement('div');
+                    card.className = 'resource-card';
+                    card.innerHTML = `<strong>Reference:</strong> <a href="${item.url}" target="_blank">${item.title}</a>`;
+                    sharedResourcesArea.appendChild(card);
+                });
+            }
+        }
+        loadSharedResources();
 
         // --- Submission ---
         function handleSubmission(text) {
@@ -328,7 +374,6 @@
             imageMenu.style.display = imageMenu.style.display === 'flex' ? 'none' : 'flex';
         });
 
-        // Close menu if clicking anywhere else
         document.addEventListener('click', () => { imageMenu.style.display = 'none'; });
 
         function triggerFileInput() { fileInput.click(); }
