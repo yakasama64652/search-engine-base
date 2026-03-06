@@ -117,6 +117,10 @@
         .result-item .result-url { font-size: 14px; color: var(--text-color); opacity: 0.7; display: block; margin-bottom: 2px;}
         .result-desc { color: var(--result-desc); margin-top: 5px; font-size: 14px; }
 
+        /* Gallery Grid for Image Tab */
+        .image-results-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; margin-top: 20px; }
+        .image-card { border-radius: 8px; overflow: hidden; background: #eee; height: 120px; }
+
         footer { background: var(--footer-bg); font-size: 14px; margin-top: auto; }
         .footer-bottom { display: flex; justify-content: space-between; padding: 15px 30px; }
     </style>
@@ -156,9 +160,10 @@
             <input type="file" id="file-input" style="display:none" accept="image/*">
             
             <div class="search-tabs" id="search-tabs">
-                <div class="tab active" onclick="switchTab('all')">All</div>
-                <div class="tab" onclick="switchTab('images')">Images</div>
-                <div class="tab" onclick="switchTab('videos')">Videos</div>
+                <div class="tab active" data-type="all" onclick="switchTab('all')">All</div>
+                <div class="tab" data-type="images" onclick="switchTab('images')">Images</div>
+                <div class="tab" data-type="videos" onclick="switchTab('videos')">Videos</div>
+                <div class="tab" data-type="presentation" onclick="switchTab('presentation')">Presentation</div>
             </div>
 
             <div class="buttons" id="button-row">
@@ -190,7 +195,8 @@
         const searchTabs = document.getElementById('search-tabs');
         const suggestionsList = document.getElementById('suggestions-list');
 
-        // --- FIXED SEARCH LOGIC ---
+        let currentCategory = 'all';
+
         function performSearch(queryOverride) {
             const query = (queryOverride || searchInput.value).toLowerCase().trim();
             if (!query) return;
@@ -201,20 +207,55 @@
             searchTabs.style.display = 'flex';
             resultsArea.style.display = 'block';
 
-            // Searches through Title, Keywords, AND Description
-            const matched = database.filter(item => 
-                item.title.toLowerCase().includes(query) || 
-                item.description.toLowerCase().includes(query) ||
-                item.keywords.some(k => k.toLowerCase().includes(query))
-            );
+            renderResults(currentCategory, query);
+        }
 
-            resultsArea.innerHTML = matched.length ? matched.map(item => `
-                <div class="result-item">
-                    <span class="result-url">${item.url}</span>
-                    <a href="${item.url}" target="_blank">${item.title}</a>
-                    <p class="result-desc">${item.description}</p>
-                </div>
-            `).join('') : `<p>No results found for "${query}".</p>`;
+        function switchTab(category) {
+            currentCategory = category;
+            
+            // Update Active Tab UI
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+                if(tab.getAttribute('data-type') === category) tab.classList.add('active');
+            });
+
+            const query = searchInput.value.toLowerCase().trim();
+            if (query) renderResults(category, query);
+        }
+
+        function renderResults(category, query) {
+            resultsArea.innerHTML = ""; // Clear current results
+
+            if (category === 'all') {
+                const matched = database.filter(item => 
+                    item.title.toLowerCase().includes(query) || 
+                    item.description.toLowerCase().includes(query) ||
+                    item.keywords.some(k => k.toLowerCase().includes(query))
+                );
+
+                resultsArea.innerHTML = matched.length ? matched.map(item => `
+                    <div class="result-item">
+                        <span class="result-url">${item.url}</span>
+                        <a href="${item.url}" target="_blank">${item.title}</a>
+                        <p class="result-desc">${item.description}</p>
+                    </div>
+                `).join('') : `<p>No results found for "${query}".</p>`;
+            } 
+            else if (category === 'images') {
+                resultsArea.innerHTML = `<h3>Image results for "${query}"</h3><div class="image-results-grid">
+                    ${Array(6).fill().map(() => `<div class="image-card"></div>`).join('')}
+                </div>`;
+            }
+            else if (category === 'videos') {
+                resultsArea.innerHTML = `<h3>Video results for "${query}"</h3>
+                    <div class="result-item"><a>Video Tutorial: How to use ${query}</a><p class="result-desc">2.4M views • 3 days ago</p></div>
+                    <div class="result-item"><a>Top 10 Tips for ${query}</a><p class="result-desc">150k views • 1 month ago</p></div>`;
+            }
+            else if (category === 'presentation') {
+                resultsArea.innerHTML = `<h3>Presentations for "${query}"</h3>
+                    <div class="result-item"><a>PDF: ${query} Masterclass Slides</a><p class="result-desc">Downloadable presentation on automation strategies.</p></div>
+                    <div class="result-item"><a>SlideShare: Implementing ${query} at Scale</a><p class="result-desc">Corporate deck from the 2025 Automation Summit.</p></div>`;
+            }
         }
 
         // --- Event Listeners ---
