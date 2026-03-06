@@ -82,7 +82,6 @@
         #voice-btn.listening { color: var(--mic-active); animation: pulse 1.5s infinite; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 
-        /* Dropdown Menu Styling */
         #image-menu {
             position: absolute; top: 45px; right: 10px;
             background: var(--bg-color);
@@ -113,10 +112,11 @@
         .btn { background-color: var(--btn-bg); border: 1px solid var(--btn-bg); border-radius: 4px; padding: 0 16px; line-height: 36px; cursor: pointer; color: var(--btn-text); font-size: 14px; }
 
         #results-area { margin-top: 20px; width: 584px; max-width: 90%; display: none; }
-        .result-item { padding: 20px 0; border-bottom: 1px solid var(--search-border); }
+        .result-item { padding: 20px 0; border-bottom: 1px solid var(--search-border); text-align: left; }
         .result-item a { color: var(--result-link); font-size: 20px; text-decoration: none; }
-        .result-item .result-url { font-size: 14px; color: var(--text-color); opacity: 0.7; }
-        
+        .result-item .result-url { font-size: 14px; color: var(--text-color); opacity: 0.7; display: block; margin-bottom: 2px;}
+        .result-desc { color: var(--result-desc); margin-top: 5px; font-size: 14px; }
+
         footer { background: var(--footer-bg); font-size: 14px; margin-top: auto; }
         .footer-bottom { display: flex; justify-content: space-between; padding: 15px 30px; }
     </style>
@@ -177,9 +177,10 @@
 
     <script>
         const database = [
-            { keywords: ["hubstaff", "time tracking"], url: "https://hubstaff.com/", title: "Hubstaff - Time Tracking", description: "The all-in-one work management platform." },
-            { keywords: ["lava university", "learn"], url: "https://university.lavaautomation.com", title: "Lava University", description: "Official training for LAVA experts." },
-            { keywords: ["lava automation", "company"], url: "https://www.lavaautomation.com", title: "LAVA Automation", description: "Business automation solutions." }
+            { keywords: ["hubstaff", "time tracking", "work management"], url: "https://hubstaff.com/", title: "Hubstaff - Time Tracking", description: "The all-in-one work management platform for tracking time and productivity." },
+            { keywords: ["lava university", "learn", "training"], url: "https://university.lavaautomation.com", title: "Lava University", description: "The official training platform for LAVA experts and automation specialists." },
+            { keywords: ["lava automation", "company", "home"], url: "https://www.lavaautomation.com", title: "LAVA Automation", description: "Innovative automation solutions designed for business growth and efficiency." },
+            { keywords: ["world time buddy", "timezone", "visual clock", "time converter"], url: "https://www.worldtimebuddy.com/", title: "World Time Buddy", description: "Visual world clock and time zone converter for scheduling meetings across timezones." }
         ];
 
         const searchInput = document.getElementById('search-input');
@@ -189,7 +190,7 @@
         const searchTabs = document.getElementById('search-tabs');
         const suggestionsList = document.getElementById('suggestions-list');
 
-        // --- Core Search Logic (Fixed to handle both text and specific queries) ---
+        // --- FIXED SEARCH LOGIC ---
         function performSearch(queryOverride) {
             const query = (queryOverride || searchInput.value).toLowerCase().trim();
             if (!query) return;
@@ -200,14 +201,16 @@
             searchTabs.style.display = 'flex';
             resultsArea.style.display = 'block';
 
+            // Searches through Title, Keywords, AND Description
             const matched = database.filter(item => 
                 item.title.toLowerCase().includes(query) || 
-                item.keywords.some(k => k.includes(query))
+                item.description.toLowerCase().includes(query) ||
+                item.keywords.some(k => k.toLowerCase().includes(query))
             );
 
             resultsArea.innerHTML = matched.length ? matched.map(item => `
                 <div class="result-item">
-                    <span class="result-url">${item.url}</span><br>
+                    <span class="result-url">${item.url}</span>
                     <a href="${item.url}" target="_blank">${item.title}</a>
                     <p class="result-desc">${item.description}</p>
                 </div>
@@ -226,7 +229,7 @@
             suggestionsList.style.display = matches.length ? 'block' : 'none';
         };
 
-        // --- Voice & Image Functions ---
+        // --- Voice Logic ---
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (SpeechRecognition) {
             const rec = new SpeechRecognition();
@@ -249,7 +252,7 @@
 
         function handlePasteUrl() {
             const url = prompt("Paste Image URL:");
-            if(url) { searchInput.value = "Image Search Result"; performSearch("lava automation"); }
+            if(url) { searchInput.value = "Searching for image..."; performSearch("lava automation"); }
         }
 
         document.getElementById('file-input').onchange = (e) => {
@@ -261,7 +264,7 @@
         function setTheme(theme) {
             document.documentElement.setAttribute('data-theme', theme);
             localStorage.setItem('theme', theme);
-            themeIcon.innerHTML = theme === 'dark' ? '<path d="M12 7a5 5 0 1 1-4.992 5.002A5 5 0 0 1 12 7.002zM11 1h2v3h-2V1z"/>' : '<path d="M12 3c.132 0 .263 0 .393.007a9 9 0 0 0 7.5 13.5A9 9 0 1 1 12 3z"/>';
+            themeIcon.innerHTML = theme === 'dark' ? '<path d="M12 7a5 5 0 1 1-4.992 5.002A5 5 0 0 1 12 7.002zm0 2a3 3 0 1 0 2.995 3.003A3 3 0 0 0 12 9.002zM11 1h2v3h-2V1zm0 19h2v3h-2v-3zM3.515 4.929l1.414-1.414L7.05 5.636 5.636 7.05 3.515 4.93zM16.95 18.364l1.414-1.414 2.121 2.121-1.414 1.414-2.121-2.121zm2.121-14.85l1.414 1.415-2.121 2.121-1.415-1.414 2.121-2.121zM5.636 16.95l1.414 1.414-2.121 2.121-1.414-1.414 2.121-2.121zM23 11v2h-3v-2h3zM4 11v2H1v-2h3z"/>' : '<path d="M12 3c.132 0 .263 0 .393.007a9 9 0 0 0 7.5 13.5A9 9 0 1 1 12 3z"/>';
         }
         setTheme(localStorage.getItem('theme') || 'light');
         document.getElementById('theme-toggle').onclick = () => setTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
