@@ -185,7 +185,8 @@
             { keywords: ["hubstaff", "time tracking", "work management"], url: "https://hubstaff.com/", title: "Hubstaff - Time Tracking", description: "The all-in-one work management platform for tracking time and productivity." },
             { keywords: ["lava university", "learn", "training"], url: "https://university.lavaautomation.com", title: "Lava University", description: "The official training platform for LAVA experts and automation specialists." },
             { keywords: ["lava automation", "company", "home"], url: "https://www.lavaautomation.com", title: "LAVA Automation", description: "Innovative automation solutions designed for business growth and efficiency." },
-            { keywords: ["world time buddy", "timezone", "visual clock", "time converter"], url: "https://www.worldtimebuddy.com/", title: "World Time Buddy", description: "Visual world clock and time zone converter for scheduling meetings across timezones." }
+            { keywords: ["world time buddy", "timezone", "visual clock", "time converter"], url: "https://www.worldtimebuddy.com/", title: "World Time Buddy", description: "Visual world clock and time zone converter for scheduling meetings across timezones." },
+            { keywords: ["vimeo", "lava video", "intro"], url: "https://vimeo.com/1123938577?share=copy&fl=sv&fe=ci", title: "LAVA Introduction Video", description: "Watch our detailed overview and introduction on Vimeo." }
         ];
 
         const searchInput = document.getElementById('search-input');
@@ -248,6 +249,11 @@
             }
             else if (category === 'videos') {
                 resultsArea.innerHTML = `<h3>Video results for "${query}"</h3>
+                    <div class="result-item">
+                        <span class="result-url">vimeo.com</span>
+                        <a href="https://vimeo.com/1123938577?share=copy&fl=sv&fe=ci" target="_blank">LAVA Introduction Video - Watch on Vimeo</a>
+                        <p class="result-desc">An official introduction to the LAVA ecosystem and its benefits.</p>
+                    </div>
                     <div class="result-item"><a>Video Tutorial: How to use ${query}</a><p class="result-desc">2.4M views • 3 days ago</p></div>
                     <div class="result-item"><a>Top 10 Tips for ${query}</a><p class="result-desc">150k views • 1 month ago</p></div>`;
             }
