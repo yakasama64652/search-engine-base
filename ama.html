@@ -8,7 +8,7 @@
         :root {
             --bg-color: #f8f9fa; --text-color: #1f1f1f; --input-bg: #ffffff;
             --border-color: #dfe1e5; --accent-blue: #1a73e8; --sidebar-bg: #f0f2f5;
-            --chip-bg: #ffffff; --chip-hover: #e8eaed;
+            --chip-bg: #ffffff; --chip-hover: #e8eaed; --danger-red: #d93025;
         }
         [data-theme="dark"] {
             --bg-color: #131314; --text-color: #e3e3e3; --input-bg: #1e1f20;
@@ -21,10 +21,15 @@
         .sidebar { width: 260px; background-color: var(--sidebar-bg); display: flex; flex-direction: column; padding: 15px; border-right: 1px solid var(--border-color); transition: all 0.3s; }
         .new-chat-btn { border: 1px solid var(--border-color); background: transparent; color: var(--text-color); padding: 10px; border-radius: 20px; cursor: pointer; display: flex; align-items: center; gap: 10px; font-weight: 500; margin-bottom: 20px; transition: 0.2s; }
         .new-chat-btn:hover { background: var(--chip-hover); }
-        .history-label { font-size: 12px; font-weight: bold; color: #70757a; margin-bottom: 10px; padding-left: 10px; }
+        
+        .history-label { font-size: 12px; font-weight: bold; color: #70757a; margin-bottom: 10px; padding-left: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
         .history-list { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; scrollbar-width: none; }
-        .history-item { padding: 10px; border-radius: 8px; cursor: pointer; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: 0.2s; }
+        .history-item { padding: 10px; border-radius: 8px; cursor: pointer; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: 0.2s; display: flex; align-items: center; }
         .history-item:hover { background: var(--chip-hover); }
+
+        /* Clear History Button */
+        .clear-history-btn { margin-top: auto; padding: 12px; background: transparent; border: none; color: #70757a; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 8px; border-radius: 8px; transition: 0.2s; }
+        .clear-history-btn:hover { background: rgba(217, 48, 37, 0.1); color: var(--danger-red); }
 
         /* MAIN CONTENT STYLES */
         .main-container { flex-grow: 1; display: flex; flex-direction: column; position: relative; }
@@ -71,6 +76,11 @@
         <div class="history-label">Recent</div>
         <div class="history-list" id="history-list">
             </div>
+        
+        <button class="clear-history-btn" onclick="clearHistory()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6"/></svg>
+            Clear History
+        </button>
     </div>
 
     <div class="main-container">
@@ -121,22 +131,33 @@
         // --- HISTORY LOGIC ---
         function saveToHistory(query) {
             let history = JSON.parse(localStorage.getItem('lava_history')) || [];
-            if (!history.includes(query)) {
-                history.unshift(query);
-                history = history.slice(0, 10); // Keep last 10
-                localStorage.setItem('lava_history', JSON.stringify(history));
-                renderHistory();
-            }
+            // Remove duplicates and move to top
+            history = history.filter(item => item !== query);
+            history.unshift(query);
+            history = history.slice(0, 10); 
+            localStorage.setItem('lava_history', JSON.stringify(history));
+            renderHistory();
         }
 
         function renderHistory() {
             const history = JSON.parse(localStorage.getItem('lava_history')) || [];
+            if (history.length === 0) {
+                historyList.innerHTML = '<div style="padding:10px; font-size:12px; opacity:0.5;">No recent searches</div>';
+                return;
+            }
             historyList.innerHTML = history.map(q => `
                 <div class="history-item" onclick="quickSearch('${q}')">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:8px; opacity:0.6"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:10px; opacity:0.6"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                     ${q}
                 </div>
             `).join('');
+        }
+
+        function clearHistory() {
+            if (confirm("Are you sure you want to clear your recent searches?")) {
+                localStorage.removeItem('lava_history');
+                renderHistory();
+            }
         }
 
         // --- CHAT LOGIC ---
@@ -180,7 +201,7 @@
                 if (matches.length > 0) {
                     displayResults(matches);
                 } else {
-                    displaySimple("I couldn't find a specific resource for that. Try 'Hubstaff'.");
+                    displaySimple("I couldn't find a specific resource for that. Try searching for LAVA University or Hubstaff.");
                 }
             }, 800);
         }
@@ -190,7 +211,7 @@
                 const msg = document.createElement('div');
                 msg.className = 'ai-message';
                 msg.innerHTML = `
-                    <div class="ai-text">Here is what I found:</div>
+                    <div class="ai-text">I've found this for you:</div>
                     <a href="${item.url}" target="_blank" class="resource-card-rich">
                         <span class="res-title">${item.title}</span>
                         <div class="res-desc">${item.description}</div>
