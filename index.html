@@ -34,12 +34,8 @@
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
         #image-menu { position: absolute; top: 45px; right: 10px; background: var(--bg-color); border: 1px solid var(--search-border); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: none; flex-direction: column; width: 160px; z-index: 100; }
         .menu-item { padding: 12px 15px; font-size: 14px; cursor: pointer; }
-        
-        /* Suggestions Styling */
-        #suggestions-list { width: 100%; background: var(--bg-color); border: 1px solid var(--search-border); border-top: none; border-radius: 0 0 24px 24px; display: none; position: absolute; top: 22px; left: 0; list-style: none; padding: 25px 0 10px 0; margin: 0; z-index: 5; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .suggestion-item { padding: 10px 20px; cursor: pointer; font-size: 14px; display: flex; align-items: center; }
-        .suggestion-item:hover { background-color: var(--suggestion-hover); }
-        
+        #suggestions-list { width: 100%; background: var(--bg-color); border: 1px solid var(--search-border); border-top: none; border-radius: 0 0 24px 24px; display: none; position: absolute; top: 40px; left: 0; list-style: none; padding: 10px 0; margin: 0; z-index: 5; }
+        .suggestion-item { padding: 10px 20px; cursor: pointer; }
         .search-tabs { display: none; width: 584px; max-width: 90%; margin-top: 20px; border-bottom: 1px solid var(--search-border); gap: 20px; }
         .tab { padding: 10px 5px; cursor: pointer; font-size: 14px; color: var(--result-desc); border-bottom: 3px solid transparent; }
         .tab.active { color: var(--accent-color); border-bottom: 3px solid var(--accent-color); font-weight: bold; }
@@ -73,16 +69,16 @@
                 </div>
                 <div id="image-menu">
                     <div class="menu-item" onclick="document.getElementById('file-input').click()">Upload File</div>
-                    <div class="menu-item" onclick="alert('Paste URL logic here')">Paste URL</div>
+                    <div class="menu-item" onclick="handlePasteUrl()">Paste URL</div>
                 </div>
                 <ul id="suggestions-list"></ul>
             </div>
             <input type="file" id="file-input" style="display:none" accept="image/*">
             <div class="search-tabs" id="search-tabs">
-                <div class="tab active" data-type="all">All</div>
-                <div class="tab" data-type="images">Images</div>
-                <div class="tab" data-type="videos">Videos</div>
-                <div class="tab" data-type="presentation">Presentation</div>
+                <div class="tab active" data-type="all" onclick="switchTab('all')">All</div>
+                <div class="tab" data-type="images" onclick="switchTab('images')">Images</div>
+                <div class="tab" data-type="videos" onclick="switchTab('videos')">Videos</div>
+                <div class="tab" data-type="presentation" onclick="switchTab('presentation')">Presentation</div>
             </div>
             <div class="buttons" id="button-row">
                 <button class="btn" id="search-btn">LAVA Search</button>
@@ -110,90 +106,40 @@
         const searchTabs = document.getElementById('search-tabs');
         const suggestionsList = document.getElementById('suggestions-list');
 
-        // --- Search Logic ---
         function performSearch(queryOverride) {
             const query = (queryOverride || searchInput.value).toLowerCase().trim();
             if (!query) return;
-            
             mainContent.classList.add('searching');
             buttonRow.style.display = 'none';
             searchTabs.style.display = 'flex';
             resultsArea.style.display = 'block';
             suggestionsList.style.display = 'none';
 
-            const matched = database.filter(item => 
-                item.title.toLowerCase().includes(query) || 
-                item.keywords.some(k => k.includes(query))
-            );
+            const matched = database.filter(item => item.title.toLowerCase().includes(query) || item.keywords.some(k => k.includes(query)));
             
+            // SAVE CONTEXT FOR AMA PAGE
             if (matched.length > 0) {
                 localStorage.setItem('lava_current_context', JSON.stringify({ title: matched[0].title, url: matched[0].url }));
             }
 
             resultsArea.innerHTML = matched.length ? matched.map(item => `
-                <div class="result-item">
-                    <span class="result-url">${item.url}</span><br>
-                    <a href="${item.url}" target="_blank">${item.title}</a>
-                    <p class="result-desc">${item.description}</p>
-                </div>
-            `).join('') : `<p>No results found for "${query}".</p>`;
+                <div class="result-item"><span class="result-url">${item.url}</span><br><a href="${item.url}" target="_blank">${item.title}</a><p class="result-desc">${item.description}</p></div>
+            `).join('') : `<p>No results found.</p>`;
         }
 
-        // --- Suggestion Logic ---
-        searchInput.oninput = () => {
-            const query = searchInput.value.toLowerCase().trim();
-            suggestionsList.innerHTML = '';
-            
-            if (query.length > 0) {
-                const matches = database.filter(item => 
-                    item.title.toLowerCase().includes(query) || 
-                    item.keywords.some(k => k.includes(query))
-                ).slice(0, 6); // Limit to top 6 suggestions
-
-                if (matches.length > 0) {
-                    suggestionsList.style.display = 'block';
-                    matches.forEach(match => {
-                        const li = document.createElement('li');
-                        li.className = 'suggestion-item';
-                        li.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" fill="#9aa0a6" style="margin-right:12px;"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path></svg> ${match.title}`;
-                        li.onclick = () => {
-                            searchInput.value = match.title;
-                            performSearch();
-                        };
-                        suggestionsList.appendChild(li);
-                    });
-                } else {
-                    suggestionsList.style.display = 'none';
-                }
-            } else {
-                suggestionsList.style.display = 'none';
-            }
-        };
-
-        // Event Listeners
         document.getElementById('search-btn').onclick = () => performSearch();
         searchInput.onkeypress = (e) => { if(e.key === 'Enter') performSearch(); };
         
-        // Hide suggestions when clicking outside the search area
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.search-bar-wrapper')) {
-                suggestionsList.style.display = 'none';
-            }
-        });
-
-        // --- Theme logic ---
+        // Theme logic
         const themeIcon = document.getElementById('theme-icon');
         function setTheme(t) {
-            document.documentElement.setAttribute('data-theme', t); 
-            localStorage.setItem('theme', t);
-            themeIcon.innerHTML = t === 'dark' ? 
-                '<path d="M12 7a5 5 0 1 1-4.992 5.002A5 5 0 0 1 12 7.002zM11 1h2v3h-2V1z"/>' : 
-                '<path d="M12 3c.132 0 .263 0 .393.007a9 9 0 0 0 7.5 13.5A9 9 0 1 1 12 3z"/>';
+            document.documentElement.setAttribute('data-theme', t); localStorage.setItem('theme', t);
+            themeIcon.innerHTML = t === 'dark' ? '<path d="M12 7a5 5 0 1 1-4.992 5.002A5 5 0 0 1 12 7.002zM11 1h2v3h-2V1z"/>' : '<path d="M12 3c.132 0 .263 0 .393.007a9 9 0 0 0 7.5 13.5A9 9 0 1 1 12 3z"/>';
         }
         setTheme(localStorage.getItem('theme') || 'light');
         document.getElementById('theme-toggle').onclick = () => setTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
 
-        // --- Image Menu ---
+        // Image Menu
         const imgTrigger = document.getElementById('img-trigger');
         const imgMenu = document.getElementById('image-menu');
         imgTrigger.onclick = (e) => { e.stopPropagation(); imgMenu.style.display = imgMenu.style.display === 'flex' ? 'none' : 'flex'; };
