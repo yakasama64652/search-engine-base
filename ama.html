@@ -75,7 +75,7 @@
 
         .welcome-area {
             text-align: center;
-            margin-bottom: 40px;
+            margin-bottom: 20px;
         }
 
         .ama-logo {
@@ -95,6 +95,38 @@
             margin-top: 0;
         }
 
+        /* Image Preview Area */
+        #image-preview-container {
+            display: none;
+            position: relative;
+            margin-bottom: 15px;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        #preview-img {
+            max-width: 200px;
+            max-height: 150px;
+            display: block;
+        }
+
+        .close-preview {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            text-align: center;
+            line-height: 18px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        /* Input area */
         .input-container {
             width: 100%;
             max-width: 760px;
@@ -123,10 +155,13 @@
             color: #80868b;
         }
 
-        /* Voice Icon Styling */
-        #voice-search-btn {
+        .input-icons svg {
             cursor: pointer;
-            transition: color 0.2s ease;
+            transition: color 0.2s;
+        }
+
+        .input-icons svg:hover {
+            color: var(--accent-blue);
         }
 
         #voice-search-btn.listening {
@@ -154,7 +189,6 @@
 
     <nav>
         <a id="home-link" onclick="window.location.href='index.html'">Home</a>
-        
         <button id="theme-toggle" title="Toggle Dark Mode">
             <svg id="theme-icon" viewBox="0 0 24 24" width="20" height="20" fill="currentColor"></svg>
         </button>
@@ -167,36 +201,43 @@
             <p>How can I help you be more productive today?</p>
         </div>
 
+        <div id="image-preview-container">
+            <span class="close-preview" onclick="clearImagePreview()">×</span>
+            <img id="preview-img" src="" alt="Preview">
+        </div>
+
         <div class="input-container">
             <input type="text" placeholder="Enter a prompt here" id="chat-input" autofocus autocomplete="off">
             <div class="input-icons">
-                <svg id="voice-search-btn" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <svg id="voice-search-btn" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" title="Voice Search">
                     <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
                     <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
                 </svg>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                
+                <svg id="image-upload-btn" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" title="Add Image">
                     <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-5.04-6.71l-2.75 3.54-1.96-2.36L6.5 17h11l-3.54-4.71z"/>
                 </svg>
             </div>
         </div>
 
+        <input type="file" id="file-input" style="display: none;" accept="image/*">
+
         <p class="footer-note">LAVA AI may display inaccurate info, so double-check its responses.</p>
     </div>
 
     <script>
-        // Elements
         const themeToggle = document.getElementById('theme-toggle');
         const themeIcon = document.getElementById('theme-icon');
         const chatInput = document.getElementById('chat-input');
         const voiceSearchBtn = document.getElementById('voice-search-btn');
+        const imageUploadBtn = document.getElementById('image-upload-btn');
+        const fileInput = document.getElementById('file-input');
+        const previewContainer = document.getElementById('image-preview-container');
+        const previewImg = document.getElementById('preview-img');
 
-        // --- Theme Toggle Logic ---
-        function toggleTheme() {
-            const currentTheme = document.documentElement.getAttribute('data-theme');
-            const targetTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            setTheme(targetTheme);
-        }
+        let currentImageData = null;
 
+        // --- Theme Toggle ---
         function setTheme(theme) {
             document.documentElement.setAttribute('data-theme', theme);
             localStorage.setItem('theme', theme);
@@ -204,80 +245,87 @@
         }
 
         function updateThemeIcon(theme) {
-            if (theme === 'dark') {
-                themeIcon.innerHTML = '<path d="M12 7a5 5 0 1 1-4.992 5.002A5 5 0 0 1 12 7.002zm0 2a3 3 0 1 0 2.995 3.003A3 3 0 0 0 12 9.002zM11 1h2v3h-2V1zm0 19h2v3h-2v-3zM3.515 4.929l1.414-1.414L7.05 5.636 5.636 7.05 3.515 4.93zM16.95 18.364l1.414-1.414 2.121 2.121-1.414 1.414-2.121-2.121zm2.121-14.85l1.414 1.415-2.121 2.121-1.415-1.414 2.121-2.121zM5.636 16.95l1.414 1.414-2.121 2.121-1.414-1.414 2.121-2.121zM23 11v2h-3v-2h3zM4 11v2H1v-2h3z"/>';
-            } else {
-                themeIcon.innerHTML = '<path d="M12 3c.132 0 .263 0 .393.007a9 9 0 0 0 7.5 13.5A9 9 0 1 1 12 3z"/>';
-            }
+            themeIcon.innerHTML = theme === 'dark' 
+                ? '<path d="M12 7a5 5 0 1 1-4.992 5.002A5 5 0 0 1 12 7.002zm0 2a3 3 0 1 0 2.995 3.003A3 3 0 0 0 12 9.002zM11 1h2v3h-2V1zm0 19h2v3h-2v-3zM3.515 4.929l1.414-1.414L7.05 5.636 5.636 7.05 3.515 4.93zM16.95 18.364l1.414-1.414 2.121 2.121-1.414 1.414-2.121-2.121zm2.121-14.85l1.414 1.415-2.121 2.121-1.415-1.414 2.121-2.121zM5.636 16.95l1.414 1.414-2.121 2.121-1.414-1.414 2.121-2.121zM23 11v2h-3v-2h3zM4 11v2H1v-2h3z"/>'
+                : '<path d="M12 3c.132 0 .263 0 .393.007a9 9 0 0 0 7.5 13.5A9 9 0 1 1 12 3z"/>';
         }
 
-        const savedTheme = localStorage.getItem('theme') || 'light';
-        setTheme(savedTheme);
-        themeToggle.addEventListener('click', toggleTheme);
+        setTheme(localStorage.getItem('theme') || 'light');
+        themeToggle.addEventListener('click', () => {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            setTheme(isDark ? 'light' : 'dark');
+        });
 
-        // --- Chat Input Logic ---
+        // --- Submission Logic ---
+        function handleSubmission(text) {
+            let msg = "Prompt: " + (text || "[No text]");
+            if (currentImageData) msg += "\n(Included an image)";
+            
+            alert(msg);
+            
+            chatInput.value = "";
+            clearImagePreview();
+        }
+
         chatInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && e.target.value.trim() !== "") {
-                handleSubmission(e.target.value);
+            if (e.key === 'Enter' && (chatInput.value.trim() !== "" || currentImageData)) {
+                handleSubmission(chatInput.value);
             }
         });
 
-        function handleSubmission(text) {
-            alert("Thinking... You typed: " + text);
-            chatInput.value = "";
-        }
-
-        // --- Voice Search Logic ---
+        // --- Voice Logic ---
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-
         if (SpeechRecognition) {
             const recognition = new SpeechRecognition();
-            recognition.lang = 'en-US';
-            recognition.interimResults = false;
-
-            voiceSearchBtn.addEventListener('click', () => {
-                try {
-                    recognition.start();
-                } catch (e) {
-                    console.warn("Recognition already started");
-                }
-            });
-
+            voiceSearchBtn.onclick = () => { recognition.start(); };
             recognition.onstart = () => {
                 voiceSearchBtn.classList.add('listening');
                 chatInput.placeholder = "Listening...";
             };
-
-            recognition.onresult = (event) => {
-                const transcript = event.results[0][0].transcript;
+            recognition.onresult = (e) => {
+                const transcript = e.results[0][0].transcript;
                 chatInput.value = transcript;
-                
-                // Trigger submission automatically after voice ends
-                setTimeout(() => {
-                    handleSubmission(transcript);
-                    stopListeningUI();
-                }, 800);
+                setTimeout(() => handleSubmission(transcript), 800);
             };
-
-            recognition.onerror = (event) => {
-                console.error("Speech Error:", event.error);
-                stopListeningUI();
-                if(event.error === 'not-allowed') alert("Please allow microphone access to use voice search.");
-            };
-
-            recognition.onspeechend = () => {
-                recognition.stop();
-                stopListeningUI();
-            };
-
-            function stopListeningUI() {
+            recognition.onend = () => {
                 voiceSearchBtn.classList.remove('listening');
                 chatInput.placeholder = "Enter a prompt here";
-            }
+            };
+        }
 
-        } else {
-            // Hide mic if browser doesn't support Web Speech API
-            voiceSearchBtn.style.display = 'none';
+        // --- Image Logic ---
+        imageUploadBtn.addEventListener('click', () => {
+            const choice = confirm("Press OK to Upload from computer\nPress Cancel to paste a URL");
+            if (choice) {
+                fileInput.click();
+            } else {
+                const url = prompt("Please paste the image URL:");
+                if (url) {
+                    showPreview(url);
+                }
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => showPreview(event.target.result);
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function showPreview(src) {
+            currentImageData = src;
+            previewImg.src = src;
+            previewContainer.style.display = 'block';
+        }
+
+        function clearImagePreview() {
+            currentImageData = null;
+            previewImg.src = "";
+            previewContainer.style.display = 'none';
+            fileInput.value = ""; // Reset file input
         }
     </script>
 </body>
